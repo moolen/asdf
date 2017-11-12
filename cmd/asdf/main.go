@@ -18,7 +18,15 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "asdf"
 	app.Version = "0.1.0"
-	app.Usage = "Changelog generation based on semantic commit messages"
+	app.Usage = "Changelog generation based on semantic commit messages.\n   "
+	app.Usage += "The changelog generator will ask Github for pull requests that\n   "
+	app.Usage += "contain the Ticket ID and will include them in the changelog\n\n   "
+	app.Usage += "Example commit messages:\n\n   "
+	app.Usage += "feat(TICKET-123): implementing a feature\n   "
+	app.Usage += "fix: fixed something\n   "
+	app.Usage += "(TICKET-123): some message\n\n   "
+	app.Usage += "Only the Commit Subject (first line, 50 characters)\n   "
+	app.Usage += "will be parsed. The tickets will be linked if a URL is set in the configuration file\n   "
 	app.Commands = []cli.Command{
 		{
 			Name:    "generate",

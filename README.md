@@ -6,7 +6,19 @@ Generates a changelog based on semantic commit messages.
 ```
 $ asdf --help
 NAME:
-   asdf - Changelog generation based on semantic commit messages
+   asdf - Changelog generation based on semantic commit messages.
+   The changelog generator will ask Github for pull requests that
+   contain the Ticket ID and will include them in the changelog
+
+   Example commit messages:
+
+   feat(TICKET-123): implementing a feature
+   fix: fixed something
+   (TICKET-123): some message
+
+   Only the Commit Subject (first line, 50 characters)
+   will be parsed. The tickets will be linked if a URL is set in the configuration file
+
 
 USAGE:
    asdf [global options] command [command options] [arguments...]
