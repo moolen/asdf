@@ -1,0 +1,104 @@
+package repository
+
+import (
+	"reflect"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+)
+
+func TestCommitParser(t *testing.T) {
+	table := []struct {
+		in      string
+		err     error
+		commits []*Commit
+	}{
+		{
+			in: "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~1510488640~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~feat(TEST-2): feature 2",
+			commits: []*Commit{
+				&Commit{
+					ParentHashes: "2d7ea9249b0afb39c22da7774669738a7e56ff22",
+					Hash:         "1591e972ca68d72430ab159100f87683c2080508",
+					Author: CommitAuthor{
+						Name:  "Moritz Johner",
+						Email: "beller.moritz@googlemail.com",
+					},
+					Date:    time.Unix(1510488640, 0),
+					Type:    "feat",
+					Ticket:  "TEST-2",
+					Message: "feature 2",
+				},
+			},
+		},
+		{
+			// invalid time: fafafafafaffafafasdasd
+			in:      "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~fafafafafaffafafasdasd~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~feat(TEST-2): feature 2",
+			commits: nil,
+			err:     strconv.ErrSyntax,
+		},
+	}
+
+	for i, row := range table {
+		commits, err := ParseCommits(strings.NewReader(row.in), DefaultMapFunc)
+		if !reflect.DeepEqual(row.err, err) {
+			numErr, ok := err.(*strconv.NumError)
+			if !ok {
+				t.Fatalf("cannot convert to NumErr: %s", err)
+			}
+			if numErr.Err != row.err {
+				t.Fatalf("[%d] expected %#v\ngot %#v\n", i, row.err, err)
+			}
+		}
+		if !reflect.DeepEqual(row.commits, commits) {
+			t.Fatalf("[%d] expected %#v\ngot %#v\n", i, row.commits, commits)
+		}
+	}
+}
+
+func TestDefaultMapFunc(t *testing.T) {
+	table := []struct {
+		in      string
+		tp      string
+		ticket  string
+		message string
+	}{
+		{
+			in:      "feat(TICKK-123): foobar booman",
+			tp:      "feat",
+			ticket:  "TICKK-123",
+			message: "foobar booman",
+		},
+		{
+			in:      "fart(): foobar booman",
+			tp:      "fart",
+			message: "foobar booman",
+		},
+		{
+			in:      "(TICKK-123): foobar booman",
+			ticket:  "TICKK-123",
+			message: "foobar booman",
+		},
+		{
+			in:      "fang: foobar booman",
+			tp:      "fang",
+			message: "foobar booman",
+		},
+		{
+			in:      "fang foobar booman",
+			message: "fang foobar booman",
+		},
+	}
+	for i, row := range table {
+		tp, ticket, msg := DefaultMapFunc(row.in)
+		if tp != row.tp {
+			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.tp, tp)
+		}
+		if ticket != row.ticket {
+			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.ticket, ticket)
+		}
+		if msg != row.message {
+			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.message, msg)
+		}
+	}
+}
