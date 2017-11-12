@@ -2,6 +2,8 @@ package repository
 
 import (
 	"bufio"
+	"errors"
+	"fmt"
 	"io"
 	"regexp"
 	"strconv"
@@ -29,6 +31,9 @@ type CommitAuthor struct {
 
 var commitPattern = regexp.MustCompile("^(\\w*)(?:\\((.*)\\))?\\: (.*)$")
 
+// ErrParse happens, if git log gives us wrong output
+var ErrParse = errors.New("could not parse log output")
+
 // CommitMapFunc is a function that receives a commit message,
 // parses it, and returns:
 // - the type of change (feat/ix/breaking)
@@ -46,7 +51,7 @@ var formatString = []string{
 	"%at", // author date, UNIX timestamp
 	"%an", // author name
 	"%ae", // author email
-	"%s",  // commit message
+	"%s",  // commit message subject
 }
 
 var logFormatter = strings.Join(formatString, delimiter)
@@ -54,13 +59,14 @@ var logFormatter = strings.Join(formatString, delimiter)
 // DefaultMapFunc parses the commit message
 // and returns a type
 func DefaultMapFunc(msg string) (commitType string, commitTicket string, commitMessage string) {
-	found := commitPattern.FindAllStringSubmatch(msg, -1)
+	lines := strings.Split(msg, "\n")
+	found := commitPattern.FindAllStringSubmatch(lines[0], -1)
 	if len(found) < 1 {
 		return "", "", msg
 	}
 	commitType = strings.ToLower(found[0][1])
 	commitTicket = strings.ToUpper(found[0][2])
-	commitMessage = strings.ToLower(found[0][3])
+	commitMessage = fmt.Sprintf("%.50s", strings.ToLower(found[0][3]))
 	return
 }
 
@@ -72,6 +78,9 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		splitLine := strings.Split(line, delimiter)
+		if len(splitLine) != 6 {
+			return nil, ErrParse
+		}
 		unixSeconds, err := strconv.ParseInt(splitLine[2], 10, 64)
 		if err != nil {
 			return nil, err

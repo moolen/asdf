@@ -88,6 +88,12 @@ func TestDefaultMapFunc(t *testing.T) {
 			in:      "fang foobar booman",
 			message: "fang foobar booman",
 		},
+		{
+			in:      "feat(1): silly fix we have a maximum line length here. everything >50 chars should be redacted",
+			tp:      "feat",
+			ticket:  "1",
+			message: "silly fix we have a maximum line length here. ever",
+		},
 	}
 	for i, row := range table {
 		tp, ticket, msg := DefaultMapFunc(row.in)
