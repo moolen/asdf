@@ -3,13 +3,14 @@ package changelog
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/Masterminds/semver"
 
 	"github.com/moolen/asdf/repository"
 )
 
-var mylog = `## 2.1.3-rc123 (2017-11-12)
+var mylog = `## 2.1.3-rc123 (%s)
 
 #### 
 
@@ -50,8 +51,9 @@ func TestChangelog(t *testing.T) {
 	}
 	version := semver.MustParse("2.1.3-rc123")
 	log := cl.Create(commits, version)
-	if log != mylog {
-		t.Fatalf("changelog did not match\nexpected\n%#v\ngot\n%#v\n", mylog, log)
+	formattedLog := fmt.Sprintf(mylog, time.Now().Format("2006-01-02"))
+	if log != formattedLog {
+		t.Fatalf("changelog did not match\nexpected\n%#v\ngot\n%#v\n", formattedLog, log)
 	}
 }
 
