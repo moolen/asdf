@@ -23,7 +23,7 @@ func TestConfig(t *testing.T) {
 			conf: &Config{
 				VersionFile:   DefaultVersionFile,
 				ChangelogFile: DefaultChangelogFile,
-				Types:         defaultTypes(),
+				Types:         DefaultTypeMap,
 			},
 			err: "%!s(<nil>)",
 		},
@@ -46,7 +46,7 @@ func TestConfig(t *testing.T) {
 				BranchSuffix: map[string]string{
 					"foo": "bar",
 				},
-				Types: defaultTypes(),
+				Types: DefaultTypeMap,
 			},
 			err: "%!s(<nil>)",
 		},
@@ -58,7 +58,7 @@ func TestConfig(t *testing.T) {
 				BranchSuffix: map[string]string{
 					"foo": "bar",
 				},
-				Types:     defaultTypes(),
+				Types:     DefaultTypeMap,
 				TicketURL: "htp",
 			},
 			err: "%!s(<nil>)",

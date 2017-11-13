@@ -35,7 +35,11 @@ func New(typeMap map[string]string, format FormatFunc) *Changelog {
 // This uses the TypeMap to group the commits by type and
 // formats every commit with the FormatFunc
 func (c *Changelog) Create(commits []*repository.Commit, newVersion *semver.Version) string {
-	ret := fmt.Sprintf("## %s (%s)\n\n", newVersion.String(), time.Now().UTC().Format("2006-01-02"))
+	var result string
+	if newVersion != nil {
+		result += fmt.Sprintf("## %s (%s)\n\n", newVersion.String(), time.Now().UTC().Format("2006-01-02"))
+	}
+
 	typeGroup := make(map[string]string)
 	for _, commit := range commits {
 		typeGroup[commit.Type] += c.FormatFunc(commit)
@@ -46,9 +50,9 @@ func (c *Changelog) Create(commits []*repository.Commit, newVersion *semver.Vers
 		if !found {
 			typeName = t
 		}
-		ret += fmt.Sprintf("#### %s\n\n%s\n", typeName, msg)
+		result += fmt.Sprintf("#### %s\n\n%s\n", typeName, msg)
 	}
-	return ret
+	return result
 }
 
 // DefaultFormatFunc is used to format a commit message

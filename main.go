@@ -2,15 +2,19 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path"
 
-	"github.com/moolen/asdf/config"
-	"github.com/moolen/asdf/fetcher"
 	"github.com/urfave/cli"
 )
 
 const (
-	configFilename = "asdf.json"
+	configFilename  = "asdf.json"
+	flagGithubToken = "github-token"
+	flagGithubRepo  = "github-repository"
+	flagRevision    = "revision"
+	flagTicketURL   = "ticketURL"
+	flagDir         = "dir"
 )
 
 func main() {
@@ -33,69 +37,53 @@ func main() {
 			Name:    "generate",
 			Aliases: []string{"g"},
 			Usage:   "generates a changelog and the next version based on semantic commits and writes them to file",
-			Action: func(c *cli.Context) error {
-				cwd, err := getCwd(c)
-				if err != nil {
-					return cli.NewExitError(err, 1)
-				}
-				token := c.GlobalString("token")
-				config, err := config.FromFile(path.Join(cwd, configFilename))
-				if err != nil {
-					return cli.NewExitError(err, 1)
-				}
-				err = generateRelease(cwd, token, c.GlobalString("branch"), config)
-				if err != nil {
-					return cli.NewExitError(err, 1)
-				}
-				return nil
-			},
+			Action:  generateCommand,
 		},
 		{
 			Name:    "changelog",
 			Aliases: []string{"c"},
 			Usage:   "generates only the changelog and writes it to stdout",
-			Action: func(c *cli.Context) error {
-				cwd, err := getCwd(c)
-				if err != nil {
-					return cli.NewExitError(err, 1)
-				}
-				config, err := config.FromFile(path.Join(cwd, configFilename))
-				if err != nil {
-					return cli.NewExitError(err, 1)
-				}
-				token := c.GlobalString("token")
-				var fetch fetcher.PullRequestFetcher
-				if token != "" {
-					fetch, err = fetcher.New(token, config.Repository)
-					if err != nil {
-						return cli.NewExitError(err, 1)
-					}
-				}
-				changelog, _, err := generateReleaseAndChangelog(cwd, c.GlobalString("branch"), fetch, config)
-				if err != nil {
-					return cli.NewExitError(err, 1)
-				}
-				os.Stdout.WriteString(changelog)
-				return nil
-			},
+			Flags:   changelogFlags(),
+			Action:  changelogCommand,
 		},
 	}
-	app.Flags = []cli.Flag{
+	app.Flags = globalFlags()
+
+	app.Run(os.Args)
+}
+
+func globalFlags() []cli.Flag {
+	return []cli.Flag{
 		cli.StringFlag{
 			Name:   "branch",
 			Value:  "master",
 			Usage:  "name of the current branch",
 			EnvVar: "RELEASE_BRANCH",
 		},
+		// The following flags are used
+		// to configure the formatter
 		cli.StringFlag{
-			Name:   "token",
+			Name:   flagGithubToken,
 			Value:  "",
 			Usage:  "github token",
 			EnvVar: "RELEASE_GITHUB_TOKEN",
 		},
+		cli.StringFlag{
+			Name:   flagGithubRepo,
+			Value:  "",
+			Usage:  "github repository",
+			EnvVar: "RELEASE_GITHUB_REPO",
+		},
+		cli.StringFlag{
+			Name:  flagTicketURL,
+			Usage: "URL. The following tokens will be interpolated commit: {SCOPE}",
+		},
+		cli.StringFlag{
+			Name:  flagDir,
+			Value: "",
+			Usage: "the directory of the repository",
+		},
 	}
-
-	app.Run(os.Args)
 }
 
 func getCwd(c *cli.Context) (string, error) {
@@ -103,9 +91,18 @@ func getCwd(c *cli.Context) (string, error) {
 	if cwd == "" {
 		dir, err := os.Executable()
 		if err != nil {
-			return "", cli.NewExitError(err, 1)
+			return "", err
 		}
 		cwd = path.Dir(dir)
 	}
 	return cwd, nil
+}
+
+func execDir(dir, cmd string, things ...string) {
+	c := exec.Command(cmd, things...)
+	c.Dir = dir
+	err := c.Run()
+	if err != nil {
+		panic(err)
+	}
 }

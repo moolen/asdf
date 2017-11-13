@@ -26,6 +26,20 @@ type Config struct {
 // branch-names and a prerelease scheme
 type BranchSuffix map[string]string
 
+// DefaultTypeMap contains a mapping of types to groups
+// which are used to render the changelog
+var DefaultTypeMap = map[string]string{
+	"feat":     "Feature",
+	"breaking": "Breaking Changes",
+	"fix":      "Bug Fixes",
+	"perf":     "Performance Improvements",
+	"revert":   "Reverted",
+	"docs":     "Documentation",
+	"refactor": "Code Refactoring",
+	"test":     "Tests",
+	"chore":    "Chores",
+}
+
 // FromJSON returns a config from a io.Reader that contains json-encoded data
 func FromJSON(reader io.Reader) (*Config, error) {
 	config := &Config{
@@ -41,7 +55,7 @@ func FromJSON(reader io.Reader) (*Config, error) {
 		return nil, err
 	}
 	if config.Types == nil {
-		config.Types = defaultTypes()
+		config.Types = DefaultTypeMap
 	}
 	return config, nil
 }
@@ -53,18 +67,4 @@ func FromFile(path string) (*Config, error) {
 		return nil, err
 	}
 	return FromJSON(file)
-}
-
-func defaultTypes() map[string]string {
-	return map[string]string{
-		"feat":     "Feature",
-		"breaking": "Breaking Changes",
-		"fix":      "Bug Fixes",
-		"perf":     "Performance Improvements",
-		"revert":   "Reverted",
-		"docs":     "Documentation",
-		"refactor": "Code Refactoring",
-		"test":     "Tests",
-		"chore":    "Chores",
-	}
 }
