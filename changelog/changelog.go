@@ -53,8 +53,8 @@ func (c *Changelog) Create(commits []*repository.Commit, newVersion *semver.Vers
 
 // DefaultFormatFunc is used to format a commit message
 func DefaultFormatFunc(c *repository.Commit) string {
-	if c.Ticket != "" {
-		return fmt.Sprintf("* %s [%s] (%s) \n", c.Message, c.Ticket, TrimSHA(c.Hash))
+	if c.Scope != "" {
+		return fmt.Sprintf("* %s [%s] (%s) \n", c.Message, c.Scope, TrimSHA(c.Hash))
 	}
 	return fmt.Sprintf("* %s (%s) \n", c.Message, TrimSHA(c.Hash))
 }
@@ -62,9 +62,9 @@ func DefaultFormatFunc(c *repository.Commit) string {
 // URLFormatFunc is used to format a commit message
 func URLFormatFunc(url string) FormatFunc {
 	return func(c *repository.Commit) string {
-		if c.Ticket != "" {
-			ticketURL := strings.Replace(url, "{TICKET_ID}", c.Ticket, -1)
-			return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Message, c.Ticket, ticketURL, TrimSHA(c.Hash))
+		if c.Scope != "" {
+			ticketURL := strings.Replace(url, "{SCOPE}", c.Scope, -1)
+			return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Message, c.Scope, ticketURL, TrimSHA(c.Hash))
 		}
 		return DefaultFormatFunc(c)
 	}

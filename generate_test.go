@@ -106,7 +106,7 @@ func TestPrepareRepo(t *testing.T) {
 }
 
 func TestPRFormatter(t *testing.T) {
-	formatter, err := createPRFormatter(&FakeFetcher{}, "http://example.com/{TICKET_ID}/fart")
+	formatter, err := createPRFormatter(&FakeFetcher{}, "http://example.com/{SCOPE}/fart")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,21 +121,21 @@ func TestPRFormatter(t *testing.T) {
 		{
 			in: &repository.Commit{
 				Message: "mymessage",
-				Ticket:  "UNREFERENCED-1",
+				Scope:   "UNREFERENCED-1",
 			},
 			out: "* mymessage [UNREFERENCED-1](http://example.com/UNREFERENCED-1/fart) \n",
 		},
 		{
 			in: &repository.Commit{
 				Message: "mymessage",
-				Ticket:  "REFPR-1",
+				Scope:   "REFPR-1",
 			},
 			out: "* mymessage [REFPR-1](http://example.com/REFPR-1/fart) (#1) \n",
 		},
 		{
 			in: &repository.Commit{
 				Message: "mymessage",
-				Ticket:  "REFPR-2",
+				Scope:   "REFPR-2",
 			},
 			out: "* mymessage [REFPR-2](http://example.com/REFPR-2/fart) (#2, #3) \n",
 		},

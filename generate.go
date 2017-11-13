@@ -66,6 +66,7 @@ func generateRelease(cwd, token, branch string, config *config.Config) error {
 
 func generateReleaseAndChangelog(cwd, branch string, fetcher fetcher.PullRequestFetcher, config *config.Config) (string, *semver.Version, error) {
 	log.Println("generate release..")
+	var formatter changelog.FormatFunc
 	versionPath := path.Join(cwd, config.VersionFile)
 	versionFile, err := os.Open(versionPath)
 	defer versionFile.Close()
@@ -96,11 +97,17 @@ func generateReleaseAndChangelog(cwd, branch string, fetcher fetcher.PullRequest
 		return "", nil, err
 	}
 	log.Printf("next version: %s", nextVersion)
-	PRFormatter, err := createPRFormatter(fetcher, config.TicketURL)
-	if err != nil {
-		return "", nil, err
+
+	if fetcher != nil {
+		formatter, err = createPRFormatter(fetcher, config.TicketURL)
+		if err != nil {
+			return "", nil, err
+		}
+	} else {
+		formatter = changelog.DefaultFormatFunc
 	}
-	cl := changelog.New(config.Types.KeyLabelMap(), PRFormatter)
+
+	cl := changelog.New(config.Types.KeyLabelMap(), formatter)
 	changelog := cl.Create(commits, nextVersion)
 	return changelog, nextVersion, nil
 }
@@ -134,14 +141,14 @@ func createPRFormatter(fetcher fetcher.PullRequestFetcher, url string) (changelo
 	}
 	// return the changelog.FormatFunc
 	return func(c *repository.Commit) string {
-		if c.Ticket != "" {
+		if c.Scope != "" {
 			var prList string
-			ticketURL := strings.Replace(url, "{TICKET_ID}", c.Ticket, -1)
-			if len(PullRequestMap[c.Ticket]) > 0 {
-				prList = strings.Join(PullRequestMap[c.Ticket], ", ")
-				return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Message, c.Ticket, ticketURL, prList)
+			ticketURL := strings.Replace(url, "{SCOPE}", c.Scope, -1)
+			if len(PullRequestMap[c.Scope]) > 0 {
+				prList = strings.Join(PullRequestMap[c.Scope], ", ")
+				return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Message, c.Scope, ticketURL, prList)
 			}
-			return fmt.Sprintf("* %s [%s](%s) \n", c.Message, c.Ticket, ticketURL)
+			return fmt.Sprintf("* %s [%s](%s) \n", c.Message, c.Scope, ticketURL)
 		}
 		return changelog.DefaultFormatFunc(c)
 	}, nil

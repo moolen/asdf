@@ -96,7 +96,7 @@ func TestDefaultFormatFunc(t *testing.T) {
 			in: &repository.Commit{
 				Message: "message",
 				Hash:    "1234",
-				Ticket:  "TEST-123",
+				Scope:   "TEST-123",
 			},
 			out: "* message [TEST-123] (1234) \n",
 		},
@@ -122,23 +122,23 @@ func TestURLFormatFunc(t *testing.T) {
 				Message: "message",
 				Hash:    "1234",
 			},
-			formatter: URLFormatFunc("http://example.com/{TICKET_ID}"),
+			formatter: URLFormatFunc("http://example.com/{SCOPE}"),
 			out:       "* message (1234) \n",
 		},
 		{
 			in: &repository.Commit{
 				Message: "message",
 				Hash:    "1234",
-				Ticket:  "TEST-123",
+				Scope:   "TEST-123",
 			},
-			formatter: URLFormatFunc("http://example.com/{TICKET_ID}"),
+			formatter: URLFormatFunc("http://example.com/{SCOPE}"),
 			out:       "* message [TEST-123](http://example.com/TEST-123) (1234) \n",
 		},
 		{
 			in: &repository.Commit{
 				Message: "message",
 				Hash:    "1234",
-				Ticket:  "TEST-123",
+				Scope:   "TEST-123",
 			},
 			formatter: URLFormatFunc("http://example.com/"),
 			out:       "* message [TEST-123](http://example.com/) (1234) \n",

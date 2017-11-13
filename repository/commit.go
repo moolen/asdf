@@ -19,7 +19,7 @@ type Commit struct {
 	Author       CommitAuthor
 	Date         time.Time
 	Type         string
-	Ticket       string
+	Scope        string
 	Message      string
 }
 
@@ -58,14 +58,14 @@ var logFormatter = strings.Join(formatString, delimiter)
 
 // DefaultMapFunc parses the commit message
 // and returns a type
-func DefaultMapFunc(msg string) (commitType string, commitTicket string, commitMessage string) {
+func DefaultMapFunc(msg string) (commitType string, commitScope string, commitMessage string) {
 	lines := strings.Split(msg, "\n")
 	found := commitPattern.FindAllStringSubmatch(lines[0], -1)
 	if len(found) < 1 {
 		return "", "", msg
 	}
 	commitType = strings.ToLower(found[0][1])
-	commitTicket = strings.ToUpper(found[0][2])
+	commitScope = strings.ToUpper(found[0][2])
 	commitMessage = fmt.Sprintf("%.50s", strings.ToLower(found[0][3]))
 	return
 }
@@ -86,7 +86,7 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 			return nil, err
 		}
 		changedDate := time.Unix(unixSeconds, 0)
-		commitType, commitTicket, commitMessage := mapFunc(splitLine[5])
+		commitType, commitScope, commitMessage := mapFunc(splitLine[5])
 		commits = append(commits, &Commit{
 			ParentHashes: splitLine[0],
 			Hash:         splitLine[1],
@@ -96,8 +96,8 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 				Name:  splitLine[3],
 				Email: splitLine[4],
 			},
-			Ticket: commitTicket,
-			Type:   commitType,
+			Scope: commitScope,
+			Type:  commitType,
 		})
 	}
 	return commits, nil

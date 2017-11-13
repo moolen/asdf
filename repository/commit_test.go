@@ -26,7 +26,7 @@ func TestCommitParser(t *testing.T) {
 					},
 					Date:    time.Unix(1510488640, 0),
 					Type:    "feat",
-					Ticket:  "TEST-2",
+					Scope:   "TEST-2",
 					Message: "feature 2",
 				},
 			},
@@ -60,13 +60,13 @@ func TestDefaultMapFunc(t *testing.T) {
 	table := []struct {
 		in      string
 		tp      string
-		ticket  string
+		scope   string
 		message string
 	}{
 		{
 			in:      "feat(TICKK-123): foobar booman",
 			tp:      "feat",
-			ticket:  "TICKK-123",
+			scope:   "TICKK-123",
 			message: "foobar booman",
 		},
 		{
@@ -76,7 +76,7 @@ func TestDefaultMapFunc(t *testing.T) {
 		},
 		{
 			in:      "(TICKK-123): foobar booman",
-			ticket:  "TICKK-123",
+			scope:   "TICKK-123",
 			message: "foobar booman",
 		},
 		{
@@ -91,17 +91,17 @@ func TestDefaultMapFunc(t *testing.T) {
 		{
 			in:      "feat(1): silly fix we have a maximum line length here. everything >50 chars should be redacted",
 			tp:      "feat",
-			ticket:  "1",
+			scope:   "1",
 			message: "silly fix we have a maximum line length here. ever",
 		},
 	}
 	for i, row := range table {
-		tp, ticket, msg := DefaultMapFunc(row.in)
+		tp, scope, msg := DefaultMapFunc(row.in)
 		if tp != row.tp {
 			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.tp, tp)
 		}
-		if ticket != row.ticket {
-			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.ticket, ticket)
+		if scope != row.scope {
+			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.scope, scope)
 		}
 		if msg != row.message {
 			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.message, msg)
