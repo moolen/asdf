@@ -92,7 +92,7 @@ func generateReleaseAndChangelog(cwd, branch string, fetcher fetcher.PullRequest
 		return "", nil, ErrNoCommits
 	}
 	log.Printf("found %d commits since last release commit", len(commits))
-	nextVersion, err := calcNextVersion(commits[0], branch, version, config.BranchSuffix, config.Types.Max(commits))
+	nextVersion, err := calcNextVersion(commits[0], branch, version, config.BranchSuffix, commits.MaxChange())
 	if err != nil {
 		return "", nil, err
 	}
@@ -107,7 +107,7 @@ func generateReleaseAndChangelog(cwd, branch string, fetcher fetcher.PullRequest
 		formatter = changelog.DefaultFormatFunc
 	}
 
-	cl := changelog.New(config.Types.KeyLabelMap(), formatter)
+	cl := changelog.New(config.Types, formatter)
 	changelog := cl.Create(commits, nextVersion)
 	return changelog, nextVersion, nil
 }
@@ -154,7 +154,7 @@ func createPRFormatter(fetcher fetcher.PullRequestFetcher, url string) (changelo
 	}, nil
 }
 
-func calcNextVersion(latestCommit *repository.Commit, branch string, latest *semver.Version, branchSuffix map[string]string, change config.Change) (*semver.Version, error) {
+func calcNextVersion(latestCommit *repository.Commit, branch string, latest *semver.Version, branchSuffix map[string]string, change repository.Change) (*semver.Version, error) {
 	var next semver.Version
 	var err error
 	log.Printf("latest release: %s", latest)
@@ -206,12 +206,12 @@ func nextPrereleaseSuffix(latest *semver.Version, commit *repository.Commit, suf
 	return nextSuffix
 }
 
-func nextReleaseByChange(latest *semver.Version, change config.Change) semver.Version {
+func nextReleaseByChange(latest *semver.Version, change repository.Change) semver.Version {
 	switch change {
-	case config.ChangeMajor:
+	case repository.MajorChange:
 		log.Printf("increment major")
 		return latest.IncMajor()
-	case config.ChangeMinor:
+	case repository.MinorChange:
 		log.Printf("increment minor")
 		return latest.IncMinor()
 	}

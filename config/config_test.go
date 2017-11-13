@@ -28,16 +28,12 @@ func TestConfig(t *testing.T) {
 			err: "%!s(<nil>)",
 		},
 		{
-			json: strings.NewReader("{\"types\":[{\"key\":\"foo\",\"label\":\"bar\",\"major\":true}]}"),
+			json: strings.NewReader("{\"types\":{\"foo\":\"bar\"}}"),
 			conf: &Config{
 				VersionFile:   DefaultVersionFile,
 				ChangelogFile: DefaultChangelogFile,
-				Types: TypeConstraints{
-					&TypeConstraint{
-						Key:   "foo",
-						Label: "bar",
-						Major: true,
-					},
+				Types: map[string]string{
+					"foo": "bar",
 				},
 			},
 			err: "%!s(<nil>)",

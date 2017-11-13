@@ -36,12 +36,12 @@ func New(typeMap map[string]string, format FormatFunc) *Changelog {
 // formats every commit with the FormatFunc
 func (c *Changelog) Create(commits []*repository.Commit, newVersion *semver.Version) string {
 	ret := fmt.Sprintf("## %s (%s)\n\n", newVersion.String(), time.Now().UTC().Format("2006-01-02"))
-	typeScopeMap := make(map[string]string)
+	typeGroup := make(map[string]string)
 	for _, commit := range commits {
-		typeScopeMap[commit.Type] += c.FormatFunc(commit)
+		typeGroup[commit.Type] += c.FormatFunc(commit)
 	}
-	for _, t := range getSortedKeys(&typeScopeMap) {
-		msg := typeScopeMap[t]
+	for _, t := range getSortedKeys(&typeGroup) {
+		msg := typeGroup[t]
 		typeName, found := c.TypeMap[t]
 		if !found {
 			typeName = t

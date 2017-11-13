@@ -55,35 +55,41 @@ func TestPrepareRepo(t *testing.T) {
 	}
 
 	table := []struct {
-		commits []string
+		commits map[string]string
 		version *semver.Version
 		err     error
 	}{
 		{
-			commits: []string{},
+			commits: map[string]string{},
 			version: nil,
 			err:     ErrNoCommits,
 		},
 		{
-			commits: []string{
-				"fix(TEST-123): fixing some things",
+			commits: map[string]string{
+				"fix(TEST-123): fixing some things": "",
 			},
 			version: semver.MustParse("1.0.1"),
 		},
 		{
-			commits: []string{
-				"feat(TEST-1): feature 1",
-				"feat(TEST-2): feature 2",
-				"fix(TEST-123): fixing some things",
+			commits: map[string]string{
+				"feat(TEST-1): feature 1":           "",
+				"feat(TEST-2): feature 2":           "",
+				"fix(TEST-123): fixing some things": "",
 			},
 			version: semver.MustParse("1.1.0"),
 		},
 		{
-			commits: []string{
-				"feat(TEST-2): feature 2",
-				"fix(TEST-123): fixing some things",
-				"breaking(YALA-123): DEDALDSALD",
-				"breaking(YALA-345): 235234",
+			commits: map[string]string{
+				"feat(TEST-2): feature 2":           "",
+				"fix(TEST-123): fixing some things": "",
+				"breaking(YALA-123): DEDALDSALD":    "",
+				"breaking(YALA-345): 235234":        "",
+			},
+			version: semver.MustParse("1.1.0"),
+		},
+		{
+			commits: map[string]string{
+				"fix(NOTREALLY): yolo": "BREAKING CHANGE: your mom",
 			},
 			version: semver.MustParse("2.0.0"),
 		},
@@ -91,8 +97,8 @@ func TestPrepareRepo(t *testing.T) {
 
 	for i, row := range table {
 		repo := createRepository()
-		for _, commit := range row.commits {
-			createAndCommit(repo, commit)
+		for subject, body := range row.commits {
+			createAndCommit(repo, subject, body)
 		}
 		changelog, nextVersion, err := generateReleaseAndChangelog(repo, "master", &FakeFetcher{}, conf)
 		if err != row.err {
@@ -154,7 +160,7 @@ func TestCalcNextVersion(t *testing.T) {
 		version     *semver.Version
 		nextVersion *semver.Version
 		suffixMap   map[string]string
-		change      config.Change
+		change      repository.Change
 		err         error
 	}{
 		{
@@ -162,14 +168,14 @@ func TestCalcNextVersion(t *testing.T) {
 			branch:      "master",
 			version:     semver.MustParse("1.2.3"),
 			nextVersion: semver.MustParse("1.2.4"),
-			change:      config.ChangePatch,
+			change:      repository.PatchChange,
 		},
 		{
 			commit:      &repository.Commit{},
 			branch:      "master",
 			version:     semver.MustParse("1.2.3-rc400"),
 			nextVersion: semver.MustParse("1.2.3"),
-			change:      config.ChangePatch,
+			change:      repository.PatchChange,
 		},
 		{
 			commit: &repository.Commit{
@@ -181,7 +187,7 @@ func TestCalcNextVersion(t *testing.T) {
 			suffixMap: map[string]string{
 				"devrelease": "dev{COMMIT_SHA}",
 			},
-			change: config.ChangeMinor,
+			change: repository.MinorChange,
 		},
 		{
 			commit:      &repository.Commit{},
@@ -191,7 +197,7 @@ func TestCalcNextVersion(t *testing.T) {
 			suffixMap: map[string]string{
 				"release": "rc{RELEASE_NUMBER}",
 			},
-			change: config.ChangePatch,
+			change: repository.PatchChange,
 		},
 		{
 			commit:      &repository.Commit{},
@@ -201,7 +207,7 @@ func TestCalcNextVersion(t *testing.T) {
 			suffixMap: map[string]string{
 				"beta": "beta.{RELEASE_NUMBER}",
 			},
-			change: config.ChangePatch,
+			change: repository.PatchChange,
 		},
 	}
 
@@ -228,17 +234,17 @@ func createRepository() string {
 	execDir(repoPath, "git", "remote", "add", "origin", bareRepoPath)
 
 	createVersionFile(repoPath, "1.0.0")
-	createAndCommit(repoPath, "initial commit")
+	createAndCommit(repoPath, "initial commit", "")
 	execDir(repoPath, "git", "tag", "1.0.0")
 	execDir(repoPath, "git", "push", "origin", "master", "--tags")
 	return repoPath
 }
 
-func createAndCommit(repo, message string) {
+func createAndCommit(repo, subject, body string) {
 	file, _ := ioutil.TempFile(repo, "")
 	file.Close()
 	execDir(repo, "git", "add", "-A")
-	execDir(repo, "git", "commit", "-m", message)
+	execDir(repo, "git", "commit", "-m", subject, "-m", body)
 }
 
 func createVersionFile(repo, version string) {

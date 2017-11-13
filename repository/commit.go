@@ -12,6 +12,14 @@ import (
 	"time"
 )
 
+type Change int
+
+const (
+	PatchChange Change = iota
+	MinorChange
+	MajorChange
+)
+
 // Commit holds all the relevant information about
 // a git commit
 type Commit struct {
@@ -23,6 +31,7 @@ type Commit struct {
 	Scope        string
 	Subject      string
 	Body         string
+	Change       Change
 }
 
 // CommitAuthor holds information regarding the author of the commit
@@ -30,6 +39,10 @@ type CommitAuthor struct {
 	Name  string
 	Email string
 }
+
+// Commits is just a simple list of commits
+// that provides convenient functionality
+type Commits []*Commit
 
 var commitPattern = regexp.MustCompile("^(\\w*)(?:\\((.*)\\))?\\: (.*)$")
 
@@ -79,6 +92,7 @@ func DefaultMapFunc(msg string) (commitType string, commitScope string, commitMe
 // and returns a Commit
 func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 	var commits []*Commit
+	change := PatchChange
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
 		// first line is always the commit metadata
@@ -90,7 +104,6 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 	BodyLoop:
 		for scanner.Scan() {
 			bodyLine := scanner.Text()
-			fmt.Printf("\nSCANNER BODY LINE: %#v\n", bodyLine)
 			if bodyLine == bodyBeginSeperator {
 				continue BodyLoop
 			}
@@ -110,6 +123,12 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 		}
 		changedDate := time.Unix(unixSeconds, 0)
 		commitType, commitScope, commitMessage := mapFunc(parsedMetadata[5])
+		if commitType == "feat" {
+			change = MinorChange
+		}
+		if strings.HasPrefix(body, "BREAKING CHANGE") {
+			change = MajorChange
+		}
 		commits = append(commits, &Commit{
 			ParentHashes: parsedMetadata[0],
 			Hash:         parsedMetadata[1],
@@ -120,9 +139,21 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 				Name:  parsedMetadata[3],
 				Email: parsedMetadata[4],
 			},
-			Scope: commitScope,
-			Type:  commitType,
+			Change: change,
+			Scope:  commitScope,
+			Type:   commitType,
 		})
 	}
 	return commits, nil
+}
+
+// MaxChange gives us the max
+func (commits Commits) MaxChange() Change {
+	max := PatchChange
+	for _, commit := range commits {
+		if max < commit.Change {
+			max = commit.Change
+		}
+	}
+	return max
 }

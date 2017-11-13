@@ -50,8 +50,8 @@ func (r *GitRepository) LatestChangeOfFile(filename string) (*Commit, error) {
 }
 
 // GetHistoryUntil returns all commits from HEAD to the specified commit
-func (r *GitRepository) GetHistoryUntil(commit *Commit) ([]*Commit, error) {
-	var commits []*Commit
+func (r *GitRepository) GetHistoryUntil(commit *Commit) (Commits, error) {
+	var commits Commits
 	out, _, err := execDir(r.Path, "git", "log", "--format="+logFormatter, commit.Hash+"..HEAD")
 	if err != nil {
 		return commits, err
