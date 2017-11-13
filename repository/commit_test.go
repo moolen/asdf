@@ -27,7 +27,25 @@ func TestCommitParser(t *testing.T) {
 					Date:    time.Unix(1510488640, 0),
 					Type:    "feat",
 					Scope:   "TEST-2",
-					Message: "feature 2",
+					Subject: "feature 2",
+				},
+			},
+		},
+		{
+			in: "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~1510488640~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~feat(TEST-2): feature 2\n((((((((----))))))))\nFOOBAR\nBAZLER\n((((((((----))))))))",
+			commits: []*Commit{
+				&Commit{
+					ParentHashes: "2d7ea9249b0afb39c22da7774669738a7e56ff22",
+					Hash:         "1591e972ca68d72430ab159100f87683c2080508",
+					Author: CommitAuthor{
+						Name:  "Moritz Johner",
+						Email: "beller.moritz@googlemail.com",
+					},
+					Date:    time.Unix(1510488640, 0),
+					Type:    "feat",
+					Scope:   "TEST-2",
+					Subject: "feature 2",
+					Body:    "FOOBAR\nBAZLER\n",
 				},
 			},
 		},
@@ -51,7 +69,7 @@ func TestCommitParser(t *testing.T) {
 			}
 		}
 		if !reflect.DeepEqual(row.commits, commits) {
-			t.Fatalf("[%d] expected %#v\ngot %#v\n", i, row.commits, commits)
+			t.Fatalf("[%d] expected \n%#v\ngot \n%#v", i, row.commits[0], commits[0])
 		}
 	}
 }
@@ -61,38 +79,38 @@ func TestDefaultMapFunc(t *testing.T) {
 		in      string
 		tp      string
 		scope   string
-		message string
+		subject string
 	}{
 		{
 			in:      "feat(TICKK-123): foobar booman",
 			tp:      "feat",
 			scope:   "TICKK-123",
-			message: "foobar booman",
+			subject: "foobar booman",
 		},
 		{
 			in:      "fart(): foobar booman",
 			tp:      "fart",
-			message: "foobar booman",
+			subject: "foobar booman",
 		},
 		{
 			in:      "(TICKK-123): foobar booman",
 			scope:   "TICKK-123",
-			message: "foobar booman",
+			subject: "foobar booman",
 		},
 		{
 			in:      "fang: foobar booman",
 			tp:      "fang",
-			message: "foobar booman",
+			subject: "foobar booman",
 		},
 		{
 			in:      "fang foobar booman",
-			message: "fang foobar booman",
+			subject: "fang foobar booman",
 		},
 		{
 			in:      "feat(1): silly fix we have a maximum line length here. everything >50 chars should be redacted",
 			tp:      "feat",
 			scope:   "1",
-			message: "silly fix we have a maximum line length here. ever",
+			subject: "silly fix we have a maximum line length here. ever",
 		},
 	}
 	for i, row := range table {
@@ -103,8 +121,8 @@ func TestDefaultMapFunc(t *testing.T) {
 		if scope != row.scope {
 			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.scope, scope)
 		}
-		if msg != row.message {
-			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.message, msg)
+		if msg != row.subject {
+			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.subject, msg)
 		}
 	}
 }

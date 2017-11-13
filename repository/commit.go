@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,7 +21,8 @@ type Commit struct {
 	Date         time.Time
 	Type         string
 	Scope        string
-	Message      string
+	Subject      string
+	Body         string
 }
 
 // CommitAuthor holds information regarding the author of the commit
@@ -54,7 +56,10 @@ var formatString = []string{
 	"%s",  // commit message subject
 }
 
-var logFormatter = strings.Join(formatString, delimiter)
+var bodyBeginSeperator = "((((((((----))))))))"
+var bodyEndSeperator = "((((((((^^^^))))))))"
+
+var logFormatter = strings.Join(formatString, delimiter) + "%n" + bodyBeginSeperator + "%n%b%n" + bodyEndSeperator
 
 // DefaultMapFunc parses the commit message
 // and returns a type
@@ -76,25 +81,44 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 	var commits []*Commit
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		line := scanner.Text()
-		splitLine := strings.Split(line, delimiter)
-		if len(splitLine) != 6 {
+		// first line is always the commit metadata
+		metadata := scanner.Text()
+		var body string
+
+		// the "rest" is the commit body
+		// that contains newline characters
+	BodyLoop:
+		for scanner.Scan() {
+			bodyLine := scanner.Text()
+			fmt.Printf("\nSCANNER BODY LINE: %#v\n", bodyLine)
+			if bodyLine == bodyBeginSeperator {
+				continue BodyLoop
+			}
+			if bodyLine == bodyEndSeperator {
+				break BodyLoop
+			}
+			body += fmt.Sprintf("%s\n", bodyLine)
+		}
+		parsedMetadata := strings.Split(metadata, delimiter)
+		if len(parsedMetadata) != 6 {
+			log.Printf("%#v", parsedMetadata)
 			return nil, ErrParse
 		}
-		unixSeconds, err := strconv.ParseInt(splitLine[2], 10, 64)
+		unixSeconds, err := strconv.ParseInt(parsedMetadata[2], 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		changedDate := time.Unix(unixSeconds, 0)
-		commitType, commitScope, commitMessage := mapFunc(splitLine[5])
+		commitType, commitScope, commitMessage := mapFunc(parsedMetadata[5])
 		commits = append(commits, &Commit{
-			ParentHashes: splitLine[0],
-			Hash:         splitLine[1],
+			ParentHashes: parsedMetadata[0],
+			Hash:         parsedMetadata[1],
 			Date:         changedDate,
-			Message:      commitMessage,
+			Subject:      commitMessage,
+			Body:         body,
 			Author: CommitAuthor{
-				Name:  splitLine[3],
-				Email: splitLine[4],
+				Name:  parsedMetadata[3],
+				Email: parsedMetadata[4],
 			},
 			Scope: commitScope,
 			Type:  commitType,

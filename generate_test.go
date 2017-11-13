@@ -120,21 +120,21 @@ func TestPRFormatter(t *testing.T) {
 		},
 		{
 			in: &repository.Commit{
-				Message: "mymessage",
+				Subject: "mymessage",
 				Scope:   "UNREFERENCED-1",
 			},
 			out: "* mymessage [UNREFERENCED-1](http://example.com/UNREFERENCED-1/fart) \n",
 		},
 		{
 			in: &repository.Commit{
-				Message: "mymessage",
+				Subject: "mymessage",
 				Scope:   "REFPR-1",
 			},
 			out: "* mymessage [REFPR-1](http://example.com/REFPR-1/fart) (#1) \n",
 		},
 		{
 			in: &repository.Commit{
-				Message: "mymessage",
+				Subject: "mymessage",
 				Scope:   "REFPR-2",
 			},
 			out: "* mymessage [REFPR-2](http://example.com/REFPR-2/fart) (#2, #3) \n",

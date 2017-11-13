@@ -29,23 +29,23 @@ func TestChangelog(t *testing.T) {
 		"foo": "Foo",
 	}
 	cl := New(typeMap, func(commit *repository.Commit) string {
-		return fmt.Sprintf("%s\n", commit.Message)
+		return fmt.Sprintf("%s\n", commit.Subject)
 	})
 	commits := []*repository.Commit{
 		&repository.Commit{
-			Message: "test1",
+			Subject: "test1",
 			Type:    "foo",
 		},
 		&repository.Commit{
-			Message: "test2",
+			Subject: "test2",
 			Type:    "",
 		},
 		&repository.Commit{
-			Message: "test3",
+			Subject: "test3",
 			Type:    "",
 		},
 		&repository.Commit{
-			Message: "test4",
+			Subject: "test4",
 			Type:    "foo",
 		},
 	}
@@ -87,14 +87,14 @@ func TestDefaultFormatFunc(t *testing.T) {
 	}{
 		{
 			in: &repository.Commit{
-				Message: "message",
+				Subject: "message",
 				Hash:    "1234",
 			},
 			out: "* message (1234) \n",
 		},
 		{
 			in: &repository.Commit{
-				Message: "message",
+				Subject: "message",
 				Hash:    "1234",
 				Scope:   "TEST-123",
 			},
@@ -119,7 +119,7 @@ func TestURLFormatFunc(t *testing.T) {
 	}{
 		{
 			in: &repository.Commit{
-				Message: "message",
+				Subject: "message",
 				Hash:    "1234",
 			},
 			formatter: URLFormatFunc("http://example.com/{SCOPE}"),
@@ -127,7 +127,7 @@ func TestURLFormatFunc(t *testing.T) {
 		},
 		{
 			in: &repository.Commit{
-				Message: "message",
+				Subject: "message",
 				Hash:    "1234",
 				Scope:   "TEST-123",
 			},
@@ -136,7 +136,7 @@ func TestURLFormatFunc(t *testing.T) {
 		},
 		{
 			in: &repository.Commit{
-				Message: "message",
+				Subject: "message",
 				Hash:    "1234",
 				Scope:   "TEST-123",
 			},

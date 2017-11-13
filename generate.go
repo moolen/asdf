@@ -83,7 +83,7 @@ func generateReleaseAndChangelog(cwd, branch string, fetcher fetcher.PullRequest
 	if err != nil {
 		return "", nil, err
 	}
-	log.Printf("latest release commit: (%s) %s", latestReleaseCommit.Hash, latestReleaseCommit.Message)
+	log.Printf("latest release commit: (%s) %s", latestReleaseCommit.Hash, latestReleaseCommit.Subject)
 	commits, err := repo.GetHistoryUntil(latestReleaseCommit)
 	if err != nil {
 		return "", nil, err
@@ -146,9 +146,9 @@ func createPRFormatter(fetcher fetcher.PullRequestFetcher, url string) (changelo
 			ticketURL := strings.Replace(url, "{SCOPE}", c.Scope, -1)
 			if len(PullRequestMap[c.Scope]) > 0 {
 				prList = strings.Join(PullRequestMap[c.Scope], ", ")
-				return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Message, c.Scope, ticketURL, prList)
+				return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Subject, c.Scope, ticketURL, prList)
 			}
-			return fmt.Sprintf("* %s [%s](%s) \n", c.Message, c.Scope, ticketURL)
+			return fmt.Sprintf("* %s [%s](%s) \n", c.Subject, c.Scope, ticketURL)
 		}
 		return changelog.DefaultFormatFunc(c)
 	}, nil

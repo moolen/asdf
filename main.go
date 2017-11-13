@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"os"
 	"path"
 
@@ -40,9 +39,6 @@ func main() {
 					return cli.NewExitError(err, 1)
 				}
 				token := c.GlobalString("token")
-				if token == "" {
-					return cli.NewExitError(errors.New("github token is missing"), 1)
-				}
 				config, err := config.FromFile(path.Join(cwd, configFilename))
 				if err != nil {
 					return cli.NewExitError(err, 1)
@@ -63,19 +59,19 @@ func main() {
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
-				token := c.GlobalString("token")
-				if token == "" {
-					return cli.NewExitError(errors.New("github token is missing"), 1)
-				}
 				config, err := config.FromFile(path.Join(cwd, configFilename))
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
-				fetcher, err := fetcher.New(token, config.Repository)
-				if err != nil {
-					return cli.NewExitError(err, 1)
+				token := c.GlobalString("token")
+				var fetch fetcher.PullRequestFetcher
+				if token != "" {
+					fetch, err = fetcher.New(token, config.Repository)
+					if err != nil {
+						return cli.NewExitError(err, 1)
+					}
 				}
-				changelog, _, err := generateReleaseAndChangelog(cwd, c.GlobalString("branch"), fetcher, config)
+				changelog, _, err := generateReleaseAndChangelog(cwd, c.GlobalString("branch"), fetch, config)
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}

@@ -14,8 +14,8 @@ func TestLatestChangeOfFile(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	if commit.Message != "initial commit" {
-		t.Fatalf("commit message is wrong: expected %s, got %s", "initial commit", commit.Message)
+	if commit.Subject != "initial commit" {
+		t.Fatalf("commit message is wrong: expected %s, got %s", "initial commit", commit.Subject)
 	}
 }
 
@@ -50,8 +50,8 @@ func TestGetHistory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	if commit.Message != "initial commit" {
-		t.Fatalf("commit message is wrong: expected %s, got %s", "initial commit", commit.Message)
+	if commit.Subject != "initial commit" {
+		t.Fatalf("commit message is wrong: expected %s, got %s", "initial commit", commit.Subject)
 	}
 
 	// add some commits on top
@@ -62,14 +62,14 @@ func TestGetHistory(t *testing.T) {
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	if commits[0].Message != "third" {
-		t.Fatalf("third commit message wrong: expected third, got: %s", commits[0].Message)
+	if commits[0].Subject != "third" {
+		t.Fatalf("third commit message wrong: expected third, got: %s", commits[0].Subject)
 	}
-	if commits[1].Message != "second" {
-		t.Fatalf("second commit message wrong: expected second, got: %s", commits[1].Message)
+	if commits[1].Subject != "second" {
+		t.Fatalf("second commit message wrong: expected second, got: %s", commits[1].Subject)
 	}
-	if commits[2].Message != "first" {
-		t.Fatalf("first commit message wrong: expected first, got: %s", commits[2].Message)
+	if commits[2].Subject != "first" {
+		t.Fatalf("first commit message wrong: expected first, got: %s", commits[2].Subject)
 	}
 }
 
