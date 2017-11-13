@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/Masterminds/semver"
 	"github.com/moolen/asdf/changelog"
 	"github.com/moolen/asdf/config"
+	"github.com/urfave/cli"
 )
 
 func TestPrepareRepo(t *testing.T) {
@@ -76,6 +78,35 @@ func TestPrepareRepo(t *testing.T) {
 			t.Fatalf("[%d]\nexpected %s\n got %s", i, row.version, nextVersion)
 		}
 	}
+}
+
+func TestGenerateCommand(t *testing.T) {
+	table := []struct {
+		args []string
+		err  *cli.ExitError
+	}{
+		{
+			args: []string{""},
+			err:  cli.NewExitError(config.ErrNoConfigFile, 2),
+		},
+	}
+
+	for i, row := range table {
+		flagSet := flag.NewFlagSet("", flag.ContinueOnError)
+		flags := append(changelogFlags(), globalFlags()...)
+		for _, flag := range flags {
+			flag.Apply(flagSet)
+		}
+		repo := createRepository()
+		flagSet.Parse(append(row.args, repo))
+		ctx := cli.NewContext(&cli.App{}, flagSet, nil)
+		err := generateCommand(ctx)
+		if !reflect.DeepEqual(err, row.err) {
+			t.Fatalf("[%d] expected\n%#v\ngot\n%#v", i, row.err, err)
+		}
+
+	}
+
 }
 
 // createRepository gives us a git repository

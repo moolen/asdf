@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,9 @@ const (
 	DefaultVersionFile   = "VERSION"
 	DefaultChangelogFile = "CHANGELOG.md"
 )
+
+// ErrNoConfigFile happens if the config file does not exist
+var ErrNoConfigFile = errors.New("Config file does not exist")
 
 // Config holds all the configuration
 type Config struct {
@@ -64,7 +68,7 @@ func FromJSON(reader io.Reader) (*Config, error) {
 func FromFile(path string) (*Config, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, ErrNoConfigFile
 	}
 	return FromJSON(file)
 }

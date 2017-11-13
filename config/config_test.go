@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"reflect"
 	"strings"
 	"testing"
@@ -71,6 +72,40 @@ func TestConfig(t *testing.T) {
 		}
 		if !reflect.DeepEqual(result, row.conf) {
 			t.Fatalf("[%d]\n[%#v]\n[%#v]\n", i, row, result)
+		}
+	}
+}
+
+func TestFromFile(t *testing.T) {
+	table := []struct {
+		content string
+		config  *Config
+		err     string
+	}{
+		{
+			content: "",
+			config:  nil,
+			err:     "unexpected end of JSON input",
+		},
+		{
+			content: "{}",
+			config: &Config{
+				VersionFile:   DefaultVersionFile,
+				ChangelogFile: DefaultChangelogFile,
+				Types:         DefaultTypeMap,
+			},
+			err: "%!s(<nil>)",
+		},
+	}
+	for i, row := range table {
+		tmp, _ := ioutil.TempFile("", "")
+		tmp.WriteString(row.content)
+		res, err := FromFile(tmp.Name())
+		if !reflect.DeepEqual(row.config, res) {
+			t.Fatalf("[%d] expected \n%#v, got \n%#v", i, row.config, res)
+		}
+		if fmt.Sprintf("%s", err) != row.err {
+			t.Fatalf("[%d] expected \n[%s], got \n[%s]", i, row.err, err)
 		}
 	}
 }

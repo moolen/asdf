@@ -15,6 +15,7 @@ const (
 	flagRevision    = "revision"
 	flagTicketURL   = "ticketURL"
 	flagDir         = "dir"
+	flagBranch      = "branch"
 )
 
 func main() {
@@ -55,7 +56,7 @@ func main() {
 func globalFlags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
-			Name:   "branch",
+			Name:   flagBranch,
 			Value:  "master",
 			Usage:  "name of the current branch",
 			EnvVar: "RELEASE_BRANCH",

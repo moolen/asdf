@@ -37,50 +37,44 @@ var pullRequestTitleRegex = regexp.MustCompile("(\\w*-[0-9]+)")
 // It looks for a VERSION file, calculates the
 // changelog based on the commits since this file has changed
 func generateCommand(c *cli.Context) error {
+	branch := c.GlobalString(flagBranch)
+	token := c.GlobalString(flagGithubToken)
 	cwd, err := getCwd(c)
 	if err != nil {
 		return cli.NewExitError(err, 1)
 	}
-	token := c.GlobalString(flagGithubToken)
 	config, err := config.FromFile(path.Join(cwd, configFilename))
 	if err != nil {
 		return cli.NewExitError(err, 2)
 	}
-	err = generateRelease(cwd, token, c.GlobalString("branch"), config)
-	if err != nil {
-		return cli.NewExitError(err, 3)
-	}
-	return nil
-}
 
-func generateRelease(cwd, token, branch string, config *config.Config) error {
 	log.Printf("generating release in dir: %s", cwd)
 	versionPath := path.Join(cwd, config.VersionFile)
 	changelogfile := path.Join(cwd, config.ChangelogFile)
 	execDir(cwd, "git", "fetch", "--all")
 	formatter, err := createDefaultFormatter(token, config.Repository, config.TicketURL)
 	if err != nil {
-		return err
+		return cli.NewExitError(err, 3)
 	}
 	changelog, nextVersion, err := generateReleaseAndChangelog(cwd, branch, formatter, config)
 	if err != nil {
-		return err
+		return cli.NewExitError(err, 4)
 	}
 	currentChangelog, err := ioutil.ReadFile(changelogfile)
 	_, ok := err.(*os.PathError)
 	if err != nil && !ok {
-		return err
+		return cli.NewExitError(err, 5)
 	}
 	if nextVersion == nil {
-		return errors.New("could not calculate next version")
+		return cli.NewExitError(errors.New("could not calculate next version"), 6)
 	}
 	err = ioutil.WriteFile(changelogfile, []byte(fmt.Sprintf("%s\n\n\n%s", changelog, currentChangelog)), os.ModePerm)
 	if err != nil {
-		return err
+		return cli.NewExitError(err, 7)
 	}
 	err = ioutil.WriteFile(versionPath, []byte(nextVersion.String()), os.ModePerm)
 	if err != nil {
-		return err
+		return cli.NewExitError(err, 8)
 	}
 	return nil
 }
