@@ -58,7 +58,7 @@ func TestGetHistory(t *testing.T) {
 	createAndCommit(repoPath, "first")
 	createAndCommit(repoPath, "second")
 	createAndCommit(repoPath, "third")
-	commits, err := repo.GetHistoryUntil(commit)
+	commits, err := repo.GetHistoryUntil(commit.Hash)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
@@ -76,7 +76,7 @@ func TestGetHistory(t *testing.T) {
 func TestGetHistoryExecErr(t *testing.T) {
 	repoPath, _ := ioutil.TempDir("", "bads")
 	repo := New(repoPath, DefaultMapFunc)
-	commits, err := repo.GetHistoryUntil(&Commit{})
+	commits, err := repo.GetHistoryUntil("")
 	if err != ErrExec {
 		t.Fatalf("expected ErrExec, got: %v", err)
 	}

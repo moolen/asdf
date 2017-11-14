@@ -3,7 +3,6 @@ package changelog
 import (
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/Masterminds/semver"
@@ -35,7 +34,11 @@ func New(typeMap map[string]string, format FormatFunc) *Changelog {
 // This uses the TypeMap to group the commits by type and
 // formats every commit with the FormatFunc
 func (c *Changelog) Create(commits []*repository.Commit, newVersion *semver.Version) string {
-	ret := fmt.Sprintf("## %s (%s)\n\n", newVersion.String(), time.Now().UTC().Format("2006-01-02"))
+	var result string
+	if newVersion != nil {
+		result += fmt.Sprintf("## %s (%s)\n\n", newVersion.String(), time.Now().UTC().Format("2006-01-02"))
+	}
+
 	typeGroup := make(map[string]string)
 	for _, commit := range commits {
 		typeGroup[commit.Type] += c.FormatFunc(commit)
@@ -46,9 +49,9 @@ func (c *Changelog) Create(commits []*repository.Commit, newVersion *semver.Vers
 		if !found {
 			typeName = t
 		}
-		ret += fmt.Sprintf("#### %s\n\n%s\n", typeName, msg)
+		result += fmt.Sprintf("#### %s\n\n%s\n", typeName, msg)
 	}
-	return ret
+	return result
 }
 
 // DefaultFormatFunc is used to format a commit message
@@ -57,17 +60,6 @@ func DefaultFormatFunc(c *repository.Commit) string {
 		return fmt.Sprintf("* %s [%s] (%s) \n", c.Subject, c.Scope, TrimSHA(c.Hash))
 	}
 	return fmt.Sprintf("* %s (%s) \n", c.Subject, TrimSHA(c.Hash))
-}
-
-// URLFormatFunc is used to format a commit message
-func URLFormatFunc(url string) FormatFunc {
-	return func(c *repository.Commit) string {
-		if c.Scope != "" {
-			ticketURL := strings.Replace(url, "{SCOPE}", c.Scope, -1)
-			return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Subject, c.Scope, ticketURL, TrimSHA(c.Hash))
-		}
-		return DefaultFormatFunc(c)
-	}
 }
 
 // TrimSHA returns only the leading 8 characters of a commit hash

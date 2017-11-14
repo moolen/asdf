@@ -1,58 +1,20 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/config"
-	"github.com/moolen/asdf/fetcher"
-	"github.com/moolen/asdf/repository"
+	"github.com/moolen/asdf/changelog"
+	"github.com/urfave/cli"
 )
 
-type FakeFetcher struct{}
-
-func (f FakeFetcher) Fetch() ([]*fetcher.PullRequest, error) {
-	return []*fetcher.PullRequest{
-		&fetcher.PullRequest{
-			ID:     1,
-			Title:  "REFPR-1",
-			Merged: true,
-		},
-		&fetcher.PullRequest{
-			ID:     2,
-			Title:  "REFPR-2",
-			Merged: true,
-		},
-		&fetcher.PullRequest{
-			ID:     3,
-			Title:  "REFPR-2",
-			Merged: true,
-		},
-		&fetcher.PullRequest{
-			ID:     4,
-			Title:  "unrelated hotfix",
-			Merged: true,
-		},
-		&fetcher.PullRequest{
-			ID:     5,
-			Title:  "",
-			Merged: true,
-		},
-	}, nil
-}
-
 func TestPrepareRepo(t *testing.T) {
-
-	conf, err := config.FromJSON(strings.NewReader("{}"))
-	if err != nil {
-		panic(err)
-	}
 
 	table := []struct {
 		commits map[string]string
@@ -100,7 +62,8 @@ func TestPrepareRepo(t *testing.T) {
 		for subject, body := range row.commits {
 			createAndCommit(repo, subject, body)
 		}
-		changelog, nextVersion, err := generateReleaseAndChangelog(repo, "master", &FakeFetcher{}, conf)
+		fmt.Printf("%#v", path.Join(repo, "VERSION"))
+		changelog, nextVersion, err := generateReleaseAndChangelog(repo, "VERSION", changelog.DefaultFormatFunc)
 		if err != row.err {
 			t.Fatalf("[%d]\nexpected %#v\n got %#v", i, row.err, err)
 		}
@@ -111,116 +74,32 @@ func TestPrepareRepo(t *testing.T) {
 	}
 }
 
-func TestPRFormatter(t *testing.T) {
-	formatter, err := createPRFormatter(&FakeFetcher{}, "http://example.com/{SCOPE}/fart")
-	if err != nil {
-		t.Fatal(err)
-	}
+func TestGenerateCommand(t *testing.T) {
 	table := []struct {
-		in  *repository.Commit
-		out string
+		args []string
+		err  *cli.ExitError
 	}{
 		{
-			in:  &repository.Commit{},
-			out: "*  () \n",
-		},
-		{
-			in: &repository.Commit{
-				Subject: "mymessage",
-				Scope:   "UNREFERENCED-1",
-			},
-			out: "* mymessage [UNREFERENCED-1](http://example.com/UNREFERENCED-1/fart) \n",
-		},
-		{
-			in: &repository.Commit{
-				Subject: "mymessage",
-				Scope:   "REFPR-1",
-			},
-			out: "* mymessage [REFPR-1](http://example.com/REFPR-1/fart) (#1) \n",
-		},
-		{
-			in: &repository.Commit{
-				Subject: "mymessage",
-				Scope:   "REFPR-2",
-			},
-			out: "* mymessage [REFPR-2](http://example.com/REFPR-2/fart) (#2, #3) \n",
-		},
-	}
-	for i, row := range table {
-		out := formatter(row.in)
-		if out != row.out {
-			t.Fatalf("[%d] expected\n%#v\ngot\n%#v", i, row.out, out)
-		}
-	}
-}
-func TestCalcNextVersion(t *testing.T) {
-	table := []struct {
-		commit      *repository.Commit
-		branch      string
-		version     *semver.Version
-		nextVersion *semver.Version
-		suffixMap   map[string]string
-		change      repository.Change
-		err         error
-	}{
-		{
-			commit:      &repository.Commit{},
-			branch:      "master",
-			version:     semver.MustParse("1.2.3"),
-			nextVersion: semver.MustParse("1.2.4"),
-			change:      repository.PatchChange,
-		},
-		{
-			commit:      &repository.Commit{},
-			branch:      "master",
-			version:     semver.MustParse("1.2.3-rc400"),
-			nextVersion: semver.MustParse("1.2.3"),
-			change:      repository.PatchChange,
-		},
-		{
-			commit: &repository.Commit{
-				Hash: "1234",
-			},
-			branch:      "devrelease",
-			version:     semver.MustParse("1.2.3"),
-			nextVersion: semver.MustParse("1.2.3-dev1234"),
-			suffixMap: map[string]string{
-				"devrelease": "dev{COMMIT_SHA}",
-			},
-			change: repository.MinorChange,
-		},
-		{
-			commit:      &repository.Commit{},
-			branch:      "release",
-			version:     semver.MustParse("1.2.3-rc1"),
-			nextVersion: semver.MustParse("1.2.3-rc2"),
-			suffixMap: map[string]string{
-				"release": "rc{RELEASE_NUMBER}",
-			},
-			change: repository.PatchChange,
-		},
-		{
-			commit:      &repository.Commit{},
-			branch:      "beta",
-			version:     semver.MustParse("2.0.0-beta.1"),
-			nextVersion: semver.MustParse("2.0.0-beta.2"),
-			suffixMap: map[string]string{
-				"beta": "beta.{RELEASE_NUMBER}",
-			},
-			change: repository.PatchChange,
+			args: []string{"--dir"},
+			err:  cli.NewExitError("foo", 4),
 		},
 	}
 
 	for i, row := range table {
-		next, err := calcNextVersion(row.commit, row.branch, row.version, row.suffixMap, row.change)
-		if err != row.err {
-			t.Fatalf("[%d] expected %s\ngot %s", i, row.err, err)
+		flagSet := flag.NewFlagSet("", flag.ContinueOnError)
+		flags := append(changelogFlags(), globalFlags()...)
+		for _, flag := range flags {
+			flag.Apply(flagSet)
 		}
-		if !reflect.DeepEqual(row.nextVersion, next) {
-			t.Fatalf("[%d] expected %s\ngot %s", i, row.nextVersion, next)
+		repo := createRepository()
+		flagSet.Parse(append(row.args, repo))
+		ctx := cli.NewContext(&cli.App{}, flagSet, nil)
+		err := generateCommand(ctx)
+		if !reflect.DeepEqual(err, row.err) {
+			t.Fatalf("[%d] expected\n%#v\ngot\n%#v", i, row.err, err.Error())
 		}
-	}
 
+	}
 }
 
 // createRepository gives us a git repository
