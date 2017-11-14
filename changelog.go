@@ -55,7 +55,8 @@ func changelogCommand(c *cli.Context) error {
 		return cli.NewExitError(errNoCommits, 5)
 	}
 	cl := changelog.New(DefaultTypeMap, changelog.DefaultFormatFunc)
-	os.Stdout.WriteString(cl.Create(commits, version))
+	nextVersion := nextReleaseByChange(version, commits.MaxChange())
+	os.Stdout.WriteString(cl.Create(commits, &nextVersion))
 	return nil
 }
 
