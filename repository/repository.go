@@ -34,7 +34,7 @@ func New(repoPath string, mapFunc CommitMapFunc) *GitRepository {
 
 // LatestChangeOfFile gives us the commit of the latest change of that file
 func (r *GitRepository) LatestChangeOfFile(filename string) (*Commit, error) {
-	out, _, err := execDir(r.Path, "git", "log", "-n1", "--format="+logFormatter, "--", filename)
+	out, _, err := execDir(r.Path, "git", "log", "--no-merges", "-n1", "--format="+logFormatter, "--", filename)
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +50,24 @@ func (r *GitRepository) LatestChangeOfFile(filename string) (*Commit, error) {
 }
 
 // GetHistoryUntil returns all commits from HEAD to the specified commit
-func (r *GitRepository) GetHistoryUntil(commit *Commit) ([]*Commit, error) {
-	var commits []*Commit
-	out, _, err := execDir(r.Path, "git", "log", "--format="+logFormatter, commit.Hash+"..HEAD")
+func (r *GitRepository) GetHistoryUntil(revision string) (Commits, error) {
+	var commits Commits
+	out, _, err := execDir(r.Path, "git", "log", "--no-merges", "--format="+logFormatter, revision+"..HEAD")
+	if err != nil {
+		return commits, err
+	}
+	return ParseCommits(out, r.CommitMapFunc)
+}
+
+// GetHistory returns all commits defined by a gitrevision
+// Examples:
+// - "13c2a8c..HEAD"
+// - "develop..master"
+// - "HEAD^1"
+// For further information read `man 7 gitrevisions`
+func (r *GitRepository) GetHistory(gitrevisions string) (Commits, error) {
+	var commits Commits
+	out, _, err := execDir(r.Path, "git", "log", "--no-merges", "--format="+logFormatter, gitrevisions)
 	if err != nil {
 		return commits, err
 	}

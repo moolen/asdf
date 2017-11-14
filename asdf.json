@@ -1,9 +1,0 @@
-{
-    "repository": "moolen/asdf",
-    "branch_suffix": {
-        "master": "",
-        "hotfix*": "rc{RELEASE_NUMBER}",
-        "release*": "rc{RELEASE_NUMBER}"
-    },
-    "ticket_url": "http://github.com/moolen/asdf/issues/{TICKET_ID}"
-}

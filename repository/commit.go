@@ -5,10 +5,19 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+)
+
+type Change int
+
+const (
+	PatchChange Change = iota
+	MinorChange
+	MajorChange
 )
 
 // Commit holds all the relevant information about
@@ -19,8 +28,10 @@ type Commit struct {
 	Author       CommitAuthor
 	Date         time.Time
 	Type         string
-	Ticket       string
-	Message      string
+	Scope        string
+	Subject      string
+	Body         string
+	Change       Change
 }
 
 // CommitAuthor holds information regarding the author of the commit
@@ -28,6 +39,10 @@ type CommitAuthor struct {
 	Name  string
 	Email string
 }
+
+// Commits is just a simple list of commits
+// that provides convenient functionality
+type Commits []*Commit
 
 var commitPattern = regexp.MustCompile("^(\\w*)(?:\\((.*)\\))?\\: (.*)$")
 
@@ -37,9 +52,9 @@ var ErrParse = errors.New("could not parse log output")
 // CommitMapFunc is a function that receives a commit message,
 // parses it, and returns:
 // - the type of change (feat/ix/breaking)
-// - the ticket ID
+// - the scope
 // - the stripped message
-type CommitMapFunc func(msg string) (commitType string, commitTicket string, commitMessage string)
+type CommitMapFunc func(msg string) (commitType string, scope string, subject string)
 
 // used as delimiter to split the values from git log
 var delimiter = "~Ü>8~#Ä~8<Ü~"
@@ -54,18 +69,21 @@ var formatString = []string{
 	"%s",  // commit message subject
 }
 
-var logFormatter = strings.Join(formatString, delimiter)
+var bodyBeginSeperator = "((((((((----))))))))"
+var bodyEndSeperator = "((((((((^^^^))))))))"
+
+var logFormatter = strings.Join(formatString, delimiter) + "%n" + bodyBeginSeperator + "%n%b%n" + bodyEndSeperator
 
 // DefaultMapFunc parses the commit message
 // and returns a type
-func DefaultMapFunc(msg string) (commitType string, commitTicket string, commitMessage string) {
+func DefaultMapFunc(msg string) (commitType string, commitScope string, commitMessage string) {
 	lines := strings.Split(msg, "\n")
 	found := commitPattern.FindAllStringSubmatch(lines[0], -1)
 	if len(found) < 1 {
 		return "", "", msg
 	}
 	commitType = strings.ToLower(found[0][1])
-	commitTicket = strings.ToUpper(found[0][2])
+	commitScope = strings.ToUpper(found[0][2])
 	commitMessage = fmt.Sprintf("%.50s", strings.ToLower(found[0][3]))
 	return
 }
@@ -74,31 +92,79 @@ func DefaultMapFunc(msg string) (commitType string, commitTicket string, commitM
 // and returns a Commit
 func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 	var commits []*Commit
+	change := PatchChange
 	scanner := bufio.NewScanner(stdout)
 	for scanner.Scan() {
-		line := scanner.Text()
-		splitLine := strings.Split(line, delimiter)
-		if len(splitLine) != 6 {
+		// first line is always the commit metadata
+		metadata := scanner.Text()
+		var body string
+
+		// the "rest" is the commit body
+		// that contains newline characters
+	BodyLoop:
+		for scanner.Scan() {
+			bodyLine := scanner.Text()
+			if bodyLine == bodyBeginSeperator {
+				continue BodyLoop
+			}
+			if bodyLine == bodyEndSeperator {
+				break BodyLoop
+			}
+			body += fmt.Sprintf("%s\n", bodyLine)
+		}
+		parsedMetadata := strings.Split(metadata, delimiter)
+		if len(parsedMetadata) != 6 {
+			log.Printf("%#v", parsedMetadata)
 			return nil, ErrParse
 		}
-		unixSeconds, err := strconv.ParseInt(splitLine[2], 10, 64)
+		unixSeconds, err := strconv.ParseInt(parsedMetadata[2], 10, 64)
 		if err != nil {
 			return nil, err
 		}
 		changedDate := time.Unix(unixSeconds, 0)
-		commitType, commitTicket, commitMessage := mapFunc(splitLine[5])
+		commitType, commitScope, commitMessage := mapFunc(parsedMetadata[5])
+		if commitType == "feat" {
+			change = MinorChange
+		}
+		if strings.HasPrefix(body, "BREAKING CHANGE") {
+			change = MajorChange
+		}
 		commits = append(commits, &Commit{
-			ParentHashes: splitLine[0],
-			Hash:         splitLine[1],
+			ParentHashes: parsedMetadata[0],
+			Hash:         parsedMetadata[1],
 			Date:         changedDate,
-			Message:      commitMessage,
+			Subject:      commitMessage,
+			Body:         body,
 			Author: CommitAuthor{
-				Name:  splitLine[3],
-				Email: splitLine[4],
+				Name:  parsedMetadata[3],
+				Email: parsedMetadata[4],
 			},
-			Ticket: commitTicket,
+			Change: change,
+			Scope:  commitScope,
 			Type:   commitType,
 		})
 	}
 	return commits, nil
+}
+
+// Change should be a Stringer
+func (c Change) String() string {
+	switch c {
+	case MajorChange:
+		return "major"
+	case MinorChange:
+		return "minor"
+	}
+	return "patch"
+}
+
+// MaxChange gives us the max
+func (commits Commits) MaxChange() Change {
+	max := PatchChange
+	for _, commit := range commits {
+		if max < commit.Change {
+			max = commit.Change
+		}
+	}
+	return max
 }
