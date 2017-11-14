@@ -52,9 +52,9 @@ var ErrParse = errors.New("could not parse log output")
 // CommitMapFunc is a function that receives a commit message,
 // parses it, and returns:
 // - the type of change (feat/ix/breaking)
-// - the ticket ID
+// - the scope
 // - the stripped message
-type CommitMapFunc func(msg string) (commitType string, commitTicket string, commitMessage string)
+type CommitMapFunc func(msg string) (commitType string, scope string, subject string)
 
 // used as delimiter to split the values from git log
 var delimiter = "~Ü>8~#Ä~8<Ü~"
@@ -145,6 +145,17 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 		})
 	}
 	return commits, nil
+}
+
+// Change should be a Stringer
+func (c Change) String() string {
+	switch c {
+	case MajorChange:
+		return "major"
+	case MinorChange:
+		return "minor"
+	}
+	return "patch"
 }
 
 // MaxChange gives us the max

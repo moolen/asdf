@@ -11,10 +11,7 @@ import (
 
 // changelog is a stateless command that, given a range,
 // will write the changelog to stdout
-func changelogCommand(c *cli.Context) *cli.ExitError {
-	token := c.GlobalString(flagGithubToken)
-	githubRepo := c.GlobalString(flagGithubRepo)
-	ticketURL := c.GlobalString(flagTicketURL)
+func changelogCommand(c *cli.Context) error {
 	revision := c.String(flagRevision)
 	if revision == "" {
 		return cli.NewExitError(ErrNoRevision, 1)
@@ -31,8 +28,7 @@ func changelogCommand(c *cli.Context) *cli.ExitError {
 	if len(commits) == 0 {
 		return cli.NewExitError(ErrNoCommits, 4)
 	}
-	formatter, err := createDefaultFormatter(token, githubRepo, ticketURL)
-	cl := changelog.New(config.DefaultTypeMap, formatter)
+	cl := changelog.New(config.DefaultTypeMap, changelog.DefaultFormatFunc)
 	os.Stdout.WriteString(cl.Create(commits, nil))
 	return nil
 }

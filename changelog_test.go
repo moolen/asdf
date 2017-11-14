@@ -12,7 +12,7 @@ import (
 func TestChangelogCommand(t *testing.T) {
 	table := []struct {
 		args []string
-		err  *cli.ExitError
+		err  error
 	}{
 		{
 			args: []string{""},

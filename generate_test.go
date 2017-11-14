@@ -7,21 +7,14 @@ import (
 	"os"
 	"path"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/Masterminds/semver"
 	"github.com/moolen/asdf/changelog"
-	"github.com/moolen/asdf/config"
 	"github.com/urfave/cli"
 )
 
 func TestPrepareRepo(t *testing.T) {
-
-	conf, err := config.FromJSON(strings.NewReader("{}"))
-	if err != nil {
-		panic(err)
-	}
 
 	table := []struct {
 		commits map[string]string
@@ -69,7 +62,8 @@ func TestPrepareRepo(t *testing.T) {
 		for subject, body := range row.commits {
 			createAndCommit(repo, subject, body)
 		}
-		changelog, nextVersion, err := generateReleaseAndChangelog(repo, "master", changelog.DefaultFormatFunc, conf)
+		fmt.Printf("%#v", path.Join(repo, "VERSION"))
+		changelog, nextVersion, err := generateReleaseAndChangelog(repo, "VERSION", changelog.DefaultFormatFunc)
 		if err != row.err {
 			t.Fatalf("[%d]\nexpected %#v\n got %#v", i, row.err, err)
 		}
@@ -86,8 +80,8 @@ func TestGenerateCommand(t *testing.T) {
 		err  *cli.ExitError
 	}{
 		{
-			args: []string{""},
-			err:  cli.NewExitError(config.ErrNoConfigFile, 2),
+			args: []string{"--dir"},
+			err:  cli.NewExitError("foo", 4),
 		},
 	}
 
@@ -102,11 +96,10 @@ func TestGenerateCommand(t *testing.T) {
 		ctx := cli.NewContext(&cli.App{}, flagSet, nil)
 		err := generateCommand(ctx)
 		if !reflect.DeepEqual(err, row.err) {
-			t.Fatalf("[%d] expected\n%#v\ngot\n%#v", i, row.err, err)
+			t.Fatalf("[%d] expected\n%#v\ngot\n%#v", i, row.err, err.Error())
 		}
 
 	}
-
 }
 
 // createRepository gives us a git repository

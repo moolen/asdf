@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"os/exec"
 	"path"
@@ -9,14 +10,18 @@ import (
 )
 
 const (
-	configFilename  = "asdf.json"
-	flagGithubToken = "github-token"
-	flagGithubRepo  = "github-repository"
-	flagRevision    = "revision"
-	flagTicketURL   = "ticketURL"
-	flagDir         = "dir"
-	flagBranch      = "branch"
+	configFilename = "asdf.json"
+	flagRevision   = "revision"
+	flagDir        = "dir"
+	flagFile       = "file"
+	flagChangelog  = "changelog"
+	flagLatest     = "latest"
 )
+
+// ErrNoRevision the use has to specify a revision(range)
+// set man 7 gitrevisions
+var ErrNoRevision = errors.New("revision is required")
+var ErrNoFile = errors.New("file is required")
 
 func main() {
 	app := cli.NewApp()
@@ -33,11 +38,20 @@ func main() {
 	app.Usage += "(TICKET-123): some message\n\n   "
 	app.Usage += "Only the Commit Subject (first line, 50 characters)\n   "
 	app.Usage += "will be parsed. The tickets will be linked if a URL is set in the configuration file\n   "
+
 	app.Commands = []cli.Command{
+		{
+			Name:    "next",
+			Aliases: []string{"n"},
+			Usage:   "tells you the next version based on a revision or last file modification",
+			Flags:   nextFlags(),
+			Action:  nextCommand,
+		},
 		{
 			Name:    "generate",
 			Aliases: []string{"g"},
 			Usage:   "generates a changelog and the next version based on semantic commits and writes them to file",
+			Flags:   generateFlags(),
 			Action:  generateCommand,
 		},
 		{
@@ -56,33 +70,9 @@ func main() {
 func globalFlags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
-			Name:   flagBranch,
-			Value:  "master",
-			Usage:  "name of the current branch",
-			EnvVar: "RELEASE_BRANCH",
-		},
-		// The following flags are used
-		// to configure the formatter
-		cli.StringFlag{
-			Name:   flagGithubToken,
-			Value:  "",
-			Usage:  "github token",
-			EnvVar: "RELEASE_GITHUB_TOKEN",
-		},
-		cli.StringFlag{
-			Name:   flagGithubRepo,
-			Value:  "",
-			Usage:  "github repository",
-			EnvVar: "RELEASE_GITHUB_REPO",
-		},
-		cli.StringFlag{
-			Name:  flagTicketURL,
-			Usage: "URL. The following tokens will be interpolated commit: {SCOPE}",
-		},
-		cli.StringFlag{
 			Name:  flagDir,
 			Value: "",
-			Usage: "the directory of the repository",
+			Usage: "set the current wokring directory",
 		},
 	}
 }

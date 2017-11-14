@@ -3,7 +3,6 @@ package changelog
 import (
 	"fmt"
 	"sort"
-	"strings"
 	"time"
 
 	"github.com/Masterminds/semver"
@@ -61,17 +60,6 @@ func DefaultFormatFunc(c *repository.Commit) string {
 		return fmt.Sprintf("* %s [%s] (%s) \n", c.Subject, c.Scope, TrimSHA(c.Hash))
 	}
 	return fmt.Sprintf("* %s (%s) \n", c.Subject, TrimSHA(c.Hash))
-}
-
-// URLFormatFunc is used to format a commit message
-func URLFormatFunc(url string) FormatFunc {
-	return func(c *repository.Commit) string {
-		if c.Scope != "" {
-			ticketURL := strings.Replace(url, "{SCOPE}", c.Scope, -1)
-			return fmt.Sprintf("* %s [%s](%s) (%s) \n", c.Subject, c.Scope, ticketURL, TrimSHA(c.Hash))
-		}
-		return DefaultFormatFunc(c)
-	}
 }
 
 // TrimSHA returns only the leading 8 characters of a commit hash
