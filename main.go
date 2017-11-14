@@ -10,13 +10,12 @@ import (
 )
 
 const (
-	configFilename = "asdf.json"
-	flagRevision   = "revision"
-	flagDir        = "dir"
-	flagFile       = "file"
-	flagChangelog  = "changelog"
-	flagLatest     = "latest"
-	flagVersion    = "version"
+	flagRevision  = "revision"
+	flagDir       = "dir"
+	flagFile      = "file"
+	flagChangelog = "changelog"
+	flagLatest    = "latest"
+	flagVersion   = "version"
 )
 
 var errNoRevision = errors.New("revision is required")
