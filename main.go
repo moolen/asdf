@@ -41,34 +41,38 @@ func main() {
 	app := cli.NewApp()
 	app.Name = "asdf"
 	app.Version = "0.1.0"
-	app.Usage = "Changelog generation based on semantic commit messages.\n   "
-	app.Usage += "The commit messages subject should follow this very convention:\n   "
-	app.Usage += "<type>(scope): <description>\n\n   "
-	app.Usage += "Example commit messages:\n\n   "
+	app.Usage = "Changelog and version generation based on semantic commit messages.\n\n   "
+	app.Usage += "Specification about the structure is here: http://conventionalcommits.org\n   "
+	app.Usage += "All commit messages should follow this very convention:\n   "
+	app.Usage += "-------------------------------\n   "
+	app.Usage += "<type>(scope): <subject>\n\n   "
+	app.Usage += "<body>\n   "
+	app.Usage += "-------------------------------\n   "
+	app.Usage += "\n   "
+	app.Usage += "Example commit message subjects:\n\n   "
 	app.Usage += "feat(TICKET-123): implementing a feature\n   "
 	app.Usage += "fix: fixed something\n   "
 	app.Usage += "(TICKET-123): some message\n\n   "
-	app.Usage += "Only the Commit Subject (first line, 50 characters)\n   "
 
 	app.Commands = []cli.Command{
 		{
-			Name:    "next",
+			Name:    "next-version",
 			Aliases: []string{"n"},
-			Usage:   "tells you the next version based on a revision or last file modification",
+			Usage:   "Tells you the next version you want to release. By default it uses a VERSION file to fetch the history since the last release. the file location may be overridden via --" + flagFile,
 			Flags:   nextFlags(),
 			Action:  nextCommand,
 		},
 		{
 			Name:    "generate",
 			Aliases: []string{"g"},
-			Usage:   "generates a changelog and the next version based on semantic commits and writes them to file",
+			Usage:   "generates a changelog and the next version based on semantic commits and writes them to files",
 			Flags:   generateFlags(),
 			Action:  generateCommand,
 		},
 		{
 			Name:    "changelog",
 			Aliases: []string{"c"},
-			Usage:   "generates only the changelog and writes it to stdout",
+			Usage:   "generates the changelog and writes it to stdout. By default it uses a VERSION file to fetch the history since the last release. This can be overridden by defining a --" + flagVersion + " and --" + flagRevision,
 			Flags:   changelogFlags(),
 			Action:  changelogCommand,
 		},

@@ -34,7 +34,7 @@ func New(repoPath string, mapFunc CommitMapFunc) *GitRepository {
 
 // LatestChangeOfFile gives us the commit of the latest change of that file
 func (r *GitRepository) LatestChangeOfFile(filename string) (*Commit, error) {
-	out, _, err := execDir(r.Path, "git", "log", "-n1", "--format="+logFormatter, "--", filename)
+	out, _, err := execDir(r.Path, "git", "log", "--no-merges", "-n1", "--format="+logFormatter, "--", filename)
 	if err != nil {
 		return nil, err
 	}
@@ -52,7 +52,7 @@ func (r *GitRepository) LatestChangeOfFile(filename string) (*Commit, error) {
 // GetHistoryUntil returns all commits from HEAD to the specified commit
 func (r *GitRepository) GetHistoryUntil(revision string) (Commits, error) {
 	var commits Commits
-	out, _, err := execDir(r.Path, "git", "log", "--format="+logFormatter, revision+"..HEAD")
+	out, _, err := execDir(r.Path, "git", "log", "--no-merges", "--format="+logFormatter, revision+"..HEAD")
 	if err != nil {
 		return commits, err
 	}
@@ -67,7 +67,7 @@ func (r *GitRepository) GetHistoryUntil(revision string) (Commits, error) {
 // For further information read `man 7 gitrevisions`
 func (r *GitRepository) GetHistory(gitrevisions string) (Commits, error) {
 	var commits Commits
-	out, _, err := execDir(r.Path, "git", "log", "--format="+logFormatter, gitrevisions)
+	out, _, err := execDir(r.Path, "git", "log", "--no-merges", "--format="+logFormatter, gitrevisions)
 	if err != nil {
 		return commits, err
 	}
