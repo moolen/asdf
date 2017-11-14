@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 type Change int

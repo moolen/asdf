@@ -1,9 +1,10 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/moolen/asdf/repository"
 	"github.com/urfave/cli"

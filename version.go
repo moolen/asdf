@@ -3,9 +3,10 @@ package main
 import (
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/Masterminds/semver"
 	"github.com/moolen/asdf/repository"

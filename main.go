@@ -6,6 +6,8 @@ import (
 	"os/exec"
 	"path"
 
+	log "github.com/Sirupsen/logrus"
+
 	"github.com/urfave/cli"
 )
 
@@ -37,6 +39,7 @@ var DefaultTypeMap = map[string]string{
 }
 
 func main() {
+	log.SetFormatter(&log.TextFormatter{})
 	app := cli.NewApp()
 	app.Name = "asdf"
 	app.Version = "0.1.0"
