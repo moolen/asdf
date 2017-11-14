@@ -16,14 +16,22 @@ func TestChangelogCommand(t *testing.T) {
 	}{
 		{
 			args: []string{""},
-			err:  cli.NewExitError(ErrNoRevision, 1),
+			err:  cli.NewExitError(errNoVersionProvided, 1),
 		},
 		{
-			args: []string{"--revision", "foobar"},
-			err:  cli.NewExitError(repository.ErrExec, 3),
+			args: []string{"--version", "xyz"},
+			err:  cli.NewExitError(errNoSemverVersion, 1),
 		},
 		{
-			args: []string{"--revision", "HEAD", "--dir"},
+			args: []string{"--revision", "", "--version", "1.2.3", "--dir"},
+			err:  cli.NewExitError(errNoRevision, 2),
+		},
+		{
+			args: []string{"--revision", "foobar", "--version", "1.2.3", "--dir"},
+			err:  cli.NewExitError(repository.ErrExec, 4),
+		},
+		{
+			args: []string{"--revision", "HEAD", "--version", "2.3.4", "--dir"},
 			err:  nil,
 		},
 	}

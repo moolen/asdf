@@ -10,13 +10,12 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/moolen/asdf/changelog"
-	"github.com/moolen/asdf/config"
 	"github.com/moolen/asdf/repository"
 	"github.com/urfave/cli"
 )
 
-// ErrNoCommits is returned if there are no changes between the last release and the current HEAD
-var ErrNoCommits = errors.New("there is nothing to release: no new commits found")
+var errNoCommits = errors.New("there is nothing to release: no new commits found")
+var errNoSemverVersion = errors.New("version file does not contain a semver version")
 
 // ReleaseToken is repleaced with the prerelease number
 // If there was no previous release it will starting with 1
@@ -72,7 +71,7 @@ func generateReleaseAndChangelog(cwd, versionfile string, formatter changelog.Fo
 	}
 	version, err := readVersion(versionFile)
 	if err != nil {
-		return "", nil, errors.New("version file does not contain a semver version")
+		return "", nil, errNoSemverVersion
 	}
 	log.Printf("found version in file: %s", version)
 	repo := repository.New(cwd, repository.DefaultMapFunc)
@@ -86,7 +85,7 @@ func generateReleaseAndChangelog(cwd, versionfile string, formatter changelog.Fo
 		return "", nil, err
 	}
 	if len(commits) == 0 {
-		return "", nil, ErrNoCommits
+		return "", nil, errNoCommits
 	}
 	log.Printf("found %d commits since last release commit", len(commits))
 	nextVersion := nextReleaseByChange(version, commits.MaxChange())
@@ -95,7 +94,7 @@ func generateReleaseAndChangelog(cwd, versionfile string, formatter changelog.Fo
 	}
 	log.Printf("next version: %s", nextVersion.String())
 
-	cl := changelog.New(config.DefaultTypeMap, formatter)
+	cl := changelog.New(DefaultTypeMap, formatter)
 	changelog := cl.Create(commits, &nextVersion)
 	return changelog, &nextVersion, nil
 }

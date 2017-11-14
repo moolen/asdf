@@ -3,8 +3,9 @@ package main
 import (
 	"os"
 
+	"github.com/Masterminds/semver"
+
 	"github.com/moolen/asdf/changelog"
-	"github.com/moolen/asdf/config"
 	"github.com/moolen/asdf/repository"
 	"github.com/urfave/cli"
 )
@@ -13,23 +14,31 @@ import (
 // will write the changelog to stdout
 func changelogCommand(c *cli.Context) error {
 	revision := c.String(flagRevision)
+	versionString := c.String(flagVersion)
+	if versionString == "" {
+		return cli.NewExitError(errNoVersionProvided, 1)
+	}
+	version, err := semver.NewVersion(versionString)
+	if err != nil {
+		return cli.NewExitError(errNoSemverVersion, 1)
+	}
 	if revision == "" {
-		return cli.NewExitError(ErrNoRevision, 1)
+		return cli.NewExitError(errNoRevision, 2)
 	}
 	cwd, err := getCwd(c)
 	if err != nil {
-		return cli.NewExitError(err, 2)
+		return cli.NewExitError(err, 3)
 	}
 	repo := repository.New(cwd, repository.DefaultMapFunc)
 	commits, err := repo.GetHistory(revision)
 	if err != nil {
-		return cli.NewExitError(err, 3)
+		return cli.NewExitError(err, 4)
 	}
 	if len(commits) == 0 {
-		return cli.NewExitError(ErrNoCommits, 4)
+		return cli.NewExitError(errNoCommits, 5)
 	}
-	cl := changelog.New(config.DefaultTypeMap, changelog.DefaultFormatFunc)
-	os.Stdout.WriteString(cl.Create(commits, nil))
+	cl := changelog.New(DefaultTypeMap, changelog.DefaultFormatFunc)
+	os.Stdout.WriteString(cl.Create(commits, version))
 	return nil
 }
 
@@ -38,6 +47,10 @@ func changelogFlags() []cli.Flag {
 		cli.StringFlag{
 			Name:  flagRevision,
 			Usage: "revision to calculate the diff",
+		},
+		cli.StringFlag{
+			Name:  flagVersion,
+			Usage: "the release version",
 		},
 	}
 }

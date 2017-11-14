@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"os"
+	"path"
 
 	"github.com/moolen/asdf/repository"
 	"github.com/urfave/cli"
@@ -16,8 +17,9 @@ func nextCommand(c *cli.Context) error {
 		return cli.NewExitError(err, 1)
 	}
 	if file == "" {
-		return cli.NewExitError(ErrNoFile, 2)
+		return cli.NewExitError(errNoFile, 2)
 	}
+	file = path.Join(cwd, file)
 	repo := repository.New(cwd, repository.DefaultMapFunc)
 	commit, err = repo.LatestChangeOfFile(file)
 	if err != nil {
@@ -27,11 +29,14 @@ func nextCommand(c *cli.Context) error {
 	latest, err := readVersionFile(file)
 	log.Printf("found version: %s", latest)
 	if err != nil {
-		return cli.NewExitError(err, 5)
+		return cli.NewExitError(err, 4)
 	}
 	commits, err := repo.GetHistoryUntil(commit.Hash)
 	if err != nil {
-		return cli.NewExitError(err, 4)
+		return cli.NewExitError(err, 5)
+	}
+	if len(commits) == 0 {
+		return cli.NewExitError(errNoCommits, 6)
 	}
 	log.Printf("commits since last change: %d", len(commits))
 
@@ -45,6 +50,7 @@ func nextFlags() []cli.Flag {
 	return []cli.Flag{
 		cli.StringFlag{
 			Name:  flagFile,
+			Value: "VERSION",
 			Usage: "file to use to get the commit of last modification. That file must include the latest version",
 		},
 	}

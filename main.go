@@ -16,28 +16,39 @@ const (
 	flagFile       = "file"
 	flagChangelog  = "changelog"
 	flagLatest     = "latest"
+	flagVersion    = "version"
 )
 
-// ErrNoRevision the use has to specify a revision(range)
-// set man 7 gitrevisions
-var ErrNoRevision = errors.New("revision is required")
-var ErrNoFile = errors.New("file is required")
+var errNoRevision = errors.New("revision is required")
+var errNoFile = errors.New("file is required")
+var errNoVersionProvided = errors.New("no version provided")
+
+// DefaultTypeMap contains a mapping of types to groups
+// which are used to render the changelog
+var DefaultTypeMap = map[string]string{
+	"feat":     "Feature",
+	"breaking": "Breaking Changes",
+	"fix":      "Bug Fixes",
+	"perf":     "Performance Improvements",
+	"revert":   "Reverted",
+	"docs":     "Documentation",
+	"refactor": "Code Refactoring",
+	"test":     "Tests",
+	"chore":    "Chores",
+}
 
 func main() {
 	app := cli.NewApp()
 	app.Name = "asdf"
 	app.Version = "0.1.0"
 	app.Usage = "Changelog generation based on semantic commit messages.\n   "
-	app.Usage += "The changelog generator will ask Github for pull requests that\n   "
-	app.Usage += "contain the Ticket ID and will include them in the changelog\n\n   "
-	app.Usage += "The commit message subject should follow this very convention:\n   "
+	app.Usage += "The commit messages subject should follow this very convention:\n   "
 	app.Usage += "<type>(scope): <description>\n\n   "
 	app.Usage += "Example commit messages:\n\n   "
 	app.Usage += "feat(TICKET-123): implementing a feature\n   "
 	app.Usage += "fix: fixed something\n   "
 	app.Usage += "(TICKET-123): some message\n\n   "
 	app.Usage += "Only the Commit Subject (first line, 50 characters)\n   "
-	app.Usage += "will be parsed. The tickets will be linked if a URL is set in the configuration file\n   "
 
 	app.Commands = []cli.Command{
 		{

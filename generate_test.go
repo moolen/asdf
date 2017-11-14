@@ -24,7 +24,7 @@ func TestPrepareRepo(t *testing.T) {
 		{
 			commits: map[string]string{},
 			version: nil,
-			err:     ErrNoCommits,
+			err:     errNoCommits,
 		},
 		{
 			commits: map[string]string{
@@ -76,27 +76,38 @@ func TestPrepareRepo(t *testing.T) {
 
 func TestGenerateCommand(t *testing.T) {
 	table := []struct {
-		args []string
-		err  *cli.ExitError
+		commits map[string]string
+		args    []string
+		err     error
 	}{
 		{
 			args: []string{"--dir"},
-			err:  cli.NewExitError("foo", 4),
+			err:  cli.NewExitError(errNoCommits, 4),
+		},
+		{
+			commits: map[string]string{
+				"feat: foobar": "",
+			},
+			args: []string{"--dir"},
+			err:  nil,
 		},
 	}
 
 	for i, row := range table {
 		flagSet := flag.NewFlagSet("", flag.ContinueOnError)
-		flags := append(changelogFlags(), globalFlags()...)
+		flags := append(generateFlags(), globalFlags()...)
 		for _, flag := range flags {
 			flag.Apply(flagSet)
 		}
 		repo := createRepository()
+		for subject, body := range row.commits {
+			createAndCommit(repo, subject, body)
+		}
 		flagSet.Parse(append(row.args, repo))
 		ctx := cli.NewContext(&cli.App{}, flagSet, nil)
 		err := generateCommand(ctx)
 		if !reflect.DeepEqual(err, row.err) {
-			t.Fatalf("[%d] expected\n%#v\ngot\n%#v", i, row.err, err.Error())
+			t.Fatalf("[%d] expected\n%#v\ngot\n%#v", i, row.err, err)
 		}
 
 	}
