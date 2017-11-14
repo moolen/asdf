@@ -29,23 +29,23 @@ func TestChangelog(t *testing.T) {
 		"foo": "Foo",
 	}
 	cl := New(typeMap, func(commit *repository.Commit) string {
-		return fmt.Sprintf("%s\n", commit.Message)
+		return fmt.Sprintf("%s\n", commit.Subject)
 	})
 	commits := []*repository.Commit{
 		&repository.Commit{
-			Message: "test1",
+			Subject: "test1",
 			Type:    "foo",
 		},
 		&repository.Commit{
-			Message: "test2",
+			Subject: "test2",
 			Type:    "",
 		},
 		&repository.Commit{
-			Message: "test3",
+			Subject: "test3",
 			Type:    "",
 		},
 		&repository.Commit{
-			Message: "test4",
+			Subject: "test4",
 			Type:    "foo",
 		},
 	}
@@ -87,16 +87,16 @@ func TestDefaultFormatFunc(t *testing.T) {
 	}{
 		{
 			in: &repository.Commit{
-				Message: "message",
+				Subject: "message",
 				Hash:    "1234",
 			},
 			out: "* message (1234) \n",
 		},
 		{
 			in: &repository.Commit{
-				Message: "message",
+				Subject: "message",
 				Hash:    "1234",
-				Ticket:  "TEST-123",
+				Scope:   "TEST-123",
 			},
 			out: "* message [TEST-123] (1234) \n",
 		},
@@ -104,49 +104,6 @@ func TestDefaultFormatFunc(t *testing.T) {
 
 	for i, r := range table {
 		out := DefaultFormatFunc(r.in)
-		if out != r.out {
-			t.Fatalf("[%d] expected %#v, got %#v", i, r.out, out)
-		}
-	}
-}
-
-func TestURLFormatFunc(t *testing.T) {
-
-	table := []struct {
-		in        *repository.Commit
-		formatter FormatFunc
-		out       string
-	}{
-		{
-			in: &repository.Commit{
-				Message: "message",
-				Hash:    "1234",
-			},
-			formatter: URLFormatFunc("http://example.com/{TICKET_ID}"),
-			out:       "* message (1234) \n",
-		},
-		{
-			in: &repository.Commit{
-				Message: "message",
-				Hash:    "1234",
-				Ticket:  "TEST-123",
-			},
-			formatter: URLFormatFunc("http://example.com/{TICKET_ID}"),
-			out:       "* message [TEST-123](http://example.com/TEST-123) (1234) \n",
-		},
-		{
-			in: &repository.Commit{
-				Message: "message",
-				Hash:    "1234",
-				Ticket:  "TEST-123",
-			},
-			formatter: URLFormatFunc("http://example.com/"),
-			out:       "* message [TEST-123](http://example.com/) (1234) \n",
-		},
-	}
-
-	for i, r := range table {
-		out := r.formatter(r.in)
 		if out != r.out {
 			t.Fatalf("[%d] expected %#v, got %#v", i, r.out, out)
 		}

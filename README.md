@@ -6,18 +6,22 @@ Generates a changelog based on semantic commit messages.
 ```
 $ asdf --help
 NAME:
-   asdf - Changelog generation based on semantic commit messages.
-   The changelog generator will ask Github for pull requests that
-   contain the Ticket ID and will include them in the changelog
+   asdf - Changelog and version generation based on semantic commit messages.
 
-   Example commit messages:
+   Specification about the structure is here: http://conventionalcommits.org
+   All commit messages should follow this very convention:
+   -------------------------------
+   <type>(scope): <subject>
+
+   <body>
+   -------------------------------
+
+   Example commit message subjects:
 
    feat(TICKET-123): implementing a feature
    fix: fixed something
    (TICKET-123): some message
 
-   Only the Commit Subject (first line, 50 characters)
-   will be parsed. The tickets will be linked if a URL is set in the configuration file
 
 
 USAGE:
@@ -27,37 +31,50 @@ VERSION:
    0.1.0
 
 COMMANDS:
-     generate, g   generates a changelog and the next version based on semantic commits and writes them to file
-     changelog, c  generates only the changelog and writes it to stdout
-     help, h       Shows a list of commands or help for one command
+     next-version, n  Tells you the next version you want to release. By default it uses a VERSION file to fetch the history since the last release. the file location may be overridden via --file
+     generate, g      generates a changelog and the next version based on semantic commits and writes them to files
+     changelog, c     generates the changelog and writes it to stdout. By default it uses a VERSION file to fetch the history since the last release. This can be overridden by defining a--version and --revision
+     help, h          Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --branch value  name of the current branch (default: "master") [$RELEASE_BRANCH]
-   --token value   github token [$RELEASE_GITHUB_TOKEN]
-   --help, -h      show help
-   --version, -v   print the version
+   --dir value    set the current wokring directory
+   --help, -h     show help
+   --version, -v  print the version
 ```
 ### Commit Message Schema
 Commit messages have to follow the angularjs commit message conventions [[link](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit)].
 
 #### Examples
 - `test(PROJ-1312): write tests. do yourself a favor`
-- `breaking(PROJ-1000): break all the things!`
+- `docs(PROJ-1000):some thing!`
 - `(TICKK-123): foobar booman`
 - `bug: Y U NO GOAT?`
 
-#### Generated Changelog
-Example Changelog file:
-```
-## 1.23.5 (2017-11-12)
+## 0.1.0 (2017-11-14)
+
+#### Documentation
+
+* display usage (d2bd0903)
 
 #### Feature
 
-* some commit message (53c7d6c2)
+* next command (e6beb561)
+* parsing commit body (6c0eed43)
 
 #### Bug Fixes
 
-* fix typo (d9a3a253)
+* changelog test depended on time oo (ac4b9d06)
+* parsing multi-line commits (9c1b0bea)
+
+#### Code Refactoring
+
+* getting rid of type constraints (78361cc1)
+* cmd now in repo root (94e034d4)
+
+#### Tests
+
+* config (ddf8535f)
+* cli commands (dcd068a0)
 ```
 
 ### default types
@@ -75,13 +92,5 @@ Example Changelog file:
 
 
 ### TODO
-
-#### release command?
-- do the merges based on current branch
-  releases should only happen on
-    - release-type branches (see asdf.json -> branch_suffix)
-      - -> should be merged into master
-      - -> then merge master back to develop
-  - master
-    - merge back to develop
+[ ] add flag `--merge-only`to show only merges
  
