@@ -17,7 +17,7 @@ func TestCommitParser(t *testing.T) {
 		{
 			in: "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~1510488640~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~feat(TEST-2): feature 2",
 			commits: []*Commit{
-				&Commit{
+				{
 					ParentHashes: "2d7ea9249b0afb39c22da7774669738a7e56ff22",
 					Hash:         "1591e972ca68d72430ab159100f87683c2080508",
 					Author: CommitAuthor{
@@ -35,7 +35,7 @@ func TestCommitParser(t *testing.T) {
 		{
 			in: "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~1510488640~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~feat(TEST-2): feature 2\n((((((((----))))))))\nFOOBAR\nBAZLER\n((((((((----))))))))",
 			commits: []*Commit{
-				&Commit{
+				{
 					ParentHashes: "2d7ea9249b0afb39c22da7774669738a7e56ff22",
 					Hash:         "1591e972ca68d72430ab159100f87683c2080508",
 					Author: CommitAuthor{
@@ -54,7 +54,7 @@ func TestCommitParser(t *testing.T) {
 		{
 			in: "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~1510488640~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~docs(MYSCOPE): docs changed something 2\n((((((((----))))))))\nBREAKING CHANGE: my mom puked!\nBAZLER\n((((((((----))))))))",
 			commits: []*Commit{
-				&Commit{
+				{
 					ParentHashes: "2d7ea9249b0afb39c22da7774669738a7e56ff22",
 					Hash:         "1591e972ca68d72430ab159100f87683c2080508",
 					Author: CommitAuthor{
