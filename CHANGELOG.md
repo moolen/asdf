@@ -1,3 +1,13 @@
+## 0.3.2 (2017-11-15)
+
+#### Bug Fixes
+
+* fmt commit_test (f1c761ca) 
+* adding license [LICENSE] (8ee5284c) 
+
+
+
+
 ## 0.3.1 (2017-11-15)
 
 #### Bug Fixes
