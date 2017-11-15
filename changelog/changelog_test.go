@@ -32,19 +32,19 @@ func TestChangelog(t *testing.T) {
 		return fmt.Sprintf("%s\n", commit.Subject)
 	})
 	commits := []*repository.Commit{
-		&repository.Commit{
+		{
 			Subject: "test1",
 			Type:    "foo",
 		},
-		&repository.Commit{
+		{
 			Subject: "test2",
 			Type:    "",
 		},
-		&repository.Commit{
+		{
 			Subject: "test3",
 			Type:    "",
 		},
-		&repository.Commit{
+		{
 			Subject: "test4",
 			Type:    "foo",
 		},

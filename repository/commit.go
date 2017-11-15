@@ -13,11 +13,16 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+// Change is a custom type indicating a minor/major/patch change
+// A Change is of type int and can be semantically compared (major > minor)
 type Change int
 
 const (
+	// PatchChange is a patch change (0)
 	PatchChange Change = iota
+	// MinorChange is a minor change (1)
 	MinorChange
+	// MajorChange is a major change (2)
 	MajorChange
 )
 

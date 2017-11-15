@@ -98,7 +98,7 @@ func globalFlags() []cli.Flag {
 		cli.StringFlag{
 			Name:  flagDir,
 			Value: "",
-			Usage: "set the current wokring directory",
+			Usage: "set the current working directory",
 		},
 		cli.BoolFlag{
 			Name:  flagDebug,
