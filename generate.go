@@ -4,9 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/Masterminds/semver"
 	"github.com/moolen/asdf/changelog"
@@ -34,7 +35,7 @@ func generateCommand(c *cli.Context) error {
 	if err != nil {
 		return cli.NewExitError(err, 1)
 	}
-	log.Printf("generating release in dir: %s", cwd)
+	log.Infof("working in dir: %s", cwd)
 	versionPath := path.Join(cwd, versionFile)
 	changelogfile := path.Join(cwd, changelogFile)
 	execDir(cwd, "git", "fetch", "--all")
@@ -62,7 +63,6 @@ func generateCommand(c *cli.Context) error {
 }
 
 func generateReleaseAndChangelog(cwd, versionfile string, formatter changelog.FormatFunc) (string, *semver.Version, error) {
-	log.Println("generate release..")
 	versionPath := path.Join(cwd, versionfile)
 	versionFile, err := os.Open(versionPath)
 	defer versionFile.Close()
@@ -73,13 +73,13 @@ func generateReleaseAndChangelog(cwd, versionfile string, formatter changelog.Fo
 	if err != nil {
 		return "", nil, errNoSemverVersion
 	}
-	log.Printf("found version in file: %s", version)
+	log.Infof("found version: %s", version)
 	repo := repository.New(cwd, repository.DefaultMapFunc)
 	latestReleaseCommit, err := repo.LatestChangeOfFile(path.Base(versionPath))
 	if err != nil {
 		return "", nil, err
 	}
-	log.Printf("latest release commit: (%s) %s", latestReleaseCommit.Hash, latestReleaseCommit.Subject)
+	log.Infof("latest release commit: (%s) %s", latestReleaseCommit.Hash, latestReleaseCommit.Subject)
 	commits, err := repo.GetHistoryUntil(latestReleaseCommit.Hash)
 	if err != nil {
 		return "", nil, err
@@ -87,12 +87,12 @@ func generateReleaseAndChangelog(cwd, versionfile string, formatter changelog.Fo
 	if len(commits) == 0 {
 		return "", nil, errNoCommits
 	}
-	log.Printf("found %d commits since last release commit", len(commits))
+	log.Infof("found %d commits since last release commit", len(commits))
 	nextVersion := nextReleaseByChange(version, commits.MaxChange())
 	if err != nil {
 		return "", nil, err
 	}
-	log.Printf("next version: %s", nextVersion.String())
+	log.Infof("next version: %s", nextVersion.String())
 
 	cl := changelog.New(DefaultTypeMap, formatter)
 	changelog := cl.Create(commits, &nextVersion)

@@ -1,9 +1,10 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path"
+
+	log "github.com/Sirupsen/logrus"
 
 	"github.com/moolen/asdf/repository"
 	"github.com/urfave/cli"
@@ -25,9 +26,9 @@ func nextCommand(c *cli.Context) error {
 	if err != nil {
 		return cli.NewExitError(err, 3)
 	}
-	log.Printf("file %s had last change at %s in commit %s", file, commit.Date.Format("2006-01-02"), commit.Hash)
+	log.Infof("file %s had last change at %s in commit %s", file, commit.Date.Format("2006-01-02"), commit.Hash)
 	latest, err := readVersionFile(file)
-	log.Printf("found version: %s", latest)
+	log.Infof("found version: %s", latest)
 	if err != nil {
 		return cli.NewExitError(err, 4)
 	}
@@ -38,9 +39,9 @@ func nextCommand(c *cli.Context) error {
 	if len(commits) == 0 {
 		return cli.NewExitError(errNoCommits, 6)
 	}
-	log.Printf("commits since last change: %d", len(commits))
+	log.Infof("commits since last change: %d", len(commits))
 
-	log.Printf("found max change: %s", commits.MaxChange())
+	log.Infof("found max change: %s", commits.MaxChange())
 	nextVersion := nextReleaseByChange(latest, commits.MaxChange())
 	os.Stdout.WriteString(nextVersion.String())
 	return nil
