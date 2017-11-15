@@ -4,6 +4,8 @@ import (
 	"os"
 	"path"
 
+	log "github.com/Sirupsen/logrus"
+
 	"github.com/Masterminds/semver"
 	"github.com/moolen/asdf/changelog"
 	"github.com/moolen/asdf/repository"
@@ -28,24 +30,29 @@ func changelogCommand(c *cli.Context) error {
 
 	// 2nd use-case: supply revision + version explicitly
 	if revision != "" && versionString != "" {
+		log.Infof("found revision %s and version %s", revision, versionString)
 		version, err = semver.NewVersion(versionString)
 		if err != nil {
 			return cli.NewExitError(errNoSemverVersion, 2)
 		}
 		commits, err = repo.GetHistory(revision)
+		log.Infof("found %d commits", len(commits))
 		if err != nil {
 			return cli.NewExitError(err, 3)
 		}
 	} else if versionFile != "" {
+		log.Infof("using version file %s", versionFile)
 		version, err = readVersionFile(versionPath)
 		if err != nil && !os.IsNotExist(err) {
 			return cli.NewExitError(err, 4)
 		}
 		commit, err := repo.LatestChangeOfFile(versionPath)
+		log.Infof("latest change: %s", commit.Hash)
 		if err != nil {
 			return cli.NewExitError(err, 5)
 		}
 		commits, err = repo.GetHistoryUntil(commit.Hash)
+		log.Infof("found %d commits", len(commits))
 		if err != nil {
 			return cli.NewExitError(err, 6)
 		}

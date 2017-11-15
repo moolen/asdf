@@ -18,6 +18,7 @@ const (
 	flagChangelog = "changelog"
 	flagLatest    = "latest"
 	flagVersion   = "version"
+	flagDebug     = "debug"
 )
 
 var errNoRevision = errors.New("revision is required")
@@ -79,6 +80,14 @@ func main() {
 			Action:  changelogCommand,
 		},
 	}
+
+	app.Before = func(c *cli.Context) error {
+		if c.GlobalBool(flagDebug) {
+			log.SetLevel(log.DebugLevel)
+		}
+		return nil
+	}
+
 	app.Flags = globalFlags()
 
 	app.Run(os.Args)
@@ -90,6 +99,10 @@ func globalFlags() []cli.Flag {
 			Name:  flagDir,
 			Value: "",
 			Usage: "set the current wokring directory",
+		},
+		cli.BoolFlag{
+			Name:  flagDebug,
+			Usage: "show debug logs",
 		},
 	}
 }
