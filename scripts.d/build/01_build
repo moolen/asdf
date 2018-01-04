@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-: ${BUILD_VERSION:="0.0.0-dev"}
+: ${BUILD_VERSION:=`git describe --abbrev=0 --tags`}
 
 function startCommand {
     echo using version: $BUILD_VERSION
