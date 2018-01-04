@@ -21,6 +21,7 @@ const (
 	flagDebug     = "debug"
 )
 
+var smclVersion string
 var errNoRevision = errors.New("revision is required")
 var errNoFile = errors.New("file is required")
 var errNoVersionProvided = errors.New("no version provided")
@@ -42,8 +43,8 @@ var DefaultTypeMap = map[string]string{
 func main() {
 	log.SetFormatter(&log.TextFormatter{})
 	app := cli.NewApp()
-	app.Name = "asdf"
-	app.Version = "0.1.0"
+	app.Name = "smcl"
+	app.Version = smclVersion
 	app.Usage = "Changelog and version generation based on semantic commit messages.\n\n   "
 	app.Usage += "Specification about the structure is here: http://conventionalcommits.org\n   "
 	app.Usage += "All commit messages should follow this very convention:\n   "

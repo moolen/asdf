@@ -10,8 +10,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/changelog"
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/changelog"
+	"github.com/figome/semantic-changelog/repository"
 	"github.com/urfave/cli"
 )
 

@@ -1,0 +1,35 @@
+#!/bin/bash
+set -e
+
+: ${BUILD_VERSION:="0.0.0-dev"}
+
+function startCommand {
+    echo using version: $BUILD_VERSION
+    docker build --build-arg BUILD_VERSION=$BUILD_VERSION -t figome/smcl_build . -f Dockerfile.build
+}
+
+function help {
+    cat << "EOF"
+Usage: ./kitt build 01_build
+    creates the container and the binaries
+
+ENV VARIABLES:
+    * BUILD_VERSION
+EOF
+}
+
+function init {
+    echo $@
+    # shellcheck disable=SC2194
+    case "$1" in
+        --help)
+            help
+            exit 0
+            ;;
+        *)
+            startCommand
+            exit 0
+    esac
+}
+init $@
+

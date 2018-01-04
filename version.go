@@ -9,7 +9,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/repository"
 )
 
 func readVersionFile(path string) (*semver.Version, error) {

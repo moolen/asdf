@@ -1,0 +1,12 @@
+FROM golang:1.9.0
+
+ARG BUILD_VERSION
+
+WORKDIR /go/src/github.com/figome/semantic-changelog
+RUN go get github.com/mitchellh/gox
+RUN go get github.com/golang/dep/cmd/dep
+
+COPY . .
+RUN dep ensure
+RUN mkdir dist
+RUN cd dist && gox -ldflags="-X main.smclVersion=$BUILD_VERSION"  -arch="amd64" -output="smcl_{{.OS}}_{{.Arch}}" -os="darwin linux windows" github.com/figome/semantic-changelog
