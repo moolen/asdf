@@ -8,36 +8,24 @@ $ smcl --help
 NAME:
    smcl - Changelog and version generation based on semantic commit messages.
 
-   Specification about the structure is here: http://conventionalcommits.org
-   All commit messages should follow this very convention:
-   -------------------------------
-   <type>(scope): <subject>
-
-   <body>
-   -------------------------------
-
-   Example commit message subjects:
-
-   feat(TICKET-123): implementing a feature
-   fix: fixed something
-   (TICKET-123): some message
-
-
+   Specification about the structure is here:
+   https://github.com/figome/figo-rfc/blob/master/docs/COMMIT_MESSAGE.md
 
 USAGE:
    smcl [global options] command [command options] [arguments...]
 
 VERSION:
-   0.1.0
+   0.4.0
 
 COMMANDS:
      next-version, n  Tells you the next version you want to release. By default it uses a VERSION file to fetch the history since the last release. the file location may be overridden via --file
      generate, g      generates a changelog and the next version based on semantic commits and writes them to files
-     changelog, c     generates the changelog and writes it to stdout. By default it uses a VERSION file to fetch the history since the last release. This can be overridden by defining a--version and --revision
+     changelog, c     generates the changelog and writes it to stdout. By default it uses a VERSION file to fetch the history since the last release. This can be overridden by defining a --version and --revision
      help, h          Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --dir value    set the current wokring directory
+   --dir value    set the current working directory
+   --debug        show debug logs
    --help, -h     show help
    --version, -v  print the version
 ```
