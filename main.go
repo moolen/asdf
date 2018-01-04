@@ -109,7 +109,7 @@ func globalFlags() []cli.Flag {
 }
 
 func getCwd(c *cli.Context) (string, error) {
-	cwd := c.String("dir")
+	cwd := c.GlobalString("dir")
 	if cwd == "" {
 		dir, err := os.Executable()
 		if err != nil {
