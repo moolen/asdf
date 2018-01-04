@@ -1,3 +1,20 @@
+## 0.4.0 (2018-01-04)
+
+#### chroe
+
+* fork migration (32b1adbd) 
+
+#### Feature
+
+* adding release automation (20f7d89a) 
+
+#### feature
+
+* adding ticket to parser (d221f7c2) 
+
+
+
+
 ## 0.3.2 (2017-11-15)
 
 #### Bug Fixes
