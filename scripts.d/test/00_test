@@ -1,0 +1,44 @@
+#!/bin/bash
+
+##############################################################
+# KITT Task test 00-test
+# All Arguments must be passed via ENV variables
+# 
+# To add functionality:
+# 1. Add your command in the startCommand function
+# 2. Set DEFAULT ENV variables if it make sense
+# 3. Adjust help file
+#
+##############################################################
+
+# enforces exit on failure 
+set -e
+
+function startCommand {
+    echo "running go tests"
+    go test -v -cover ./...
+}
+
+function help {
+    cat << "EOF"
+Usage: ./kitt test 00-test
+    runs unit tests
+
+EOF
+}
+
+function init {
+    echo $@
+    # shellcheck disable=SC2194
+    case "$1" in
+        --help)
+            help
+            exit 0
+            ;;
+        *)
+            startCommand
+            exit 0
+    esac
+}
+init $@
+

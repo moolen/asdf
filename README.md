@@ -1,12 +1,12 @@
-# asdf
+# smcl
 Generates a changelog based on semantic commit messages.
 
 ## Usage
 
 ```
-$ asdf --help
+$ smcl --help
 NAME:
-   asdf - Changelog and version generation based on semantic commit messages.
+   smcl - Changelog and version generation based on semantic commit messages.
 
    Specification about the structure is here: http://conventionalcommits.org
    All commit messages should follow this very convention:
@@ -25,7 +25,7 @@ NAME:
 
 
 USAGE:
-   asdf [global options] command [command options] [arguments...]
+   smcl [global options] command [command options] [arguments...]
 
 VERSION:
    0.1.0
@@ -75,7 +75,7 @@ Commit messages have to follow the angularjs commit message conventions [[link](
 
 #### Code Refactoring
 
-* removing asdf.json (eb481d20) 
+* removing foo.json (eb481d20) 
 * changelog cmd (c80c64e5) 
 * getting rid of type constraints (78361cc1) 
 * cmd now in repo root (94e034d4) 
