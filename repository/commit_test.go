@@ -71,6 +71,26 @@ func TestCommitParser(t *testing.T) {
 			},
 		},
 		{
+			in: "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~1510488640~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~docs[TICKET-456](MYSCOPE): docs changed something 2\n((((((((----))))))))\nBREAKING CHANGE: my mom puked!\nBAZLER\n((((((((----))))))))",
+			commits: []*Commit{
+				{
+					ParentHashes: "2d7ea9249b0afb39c22da7774669738a7e56ff22",
+					Hash:         "1591e972ca68d72430ab159100f87683c2080508",
+					Author: CommitAuthor{
+						Name:  "Moritz Johner",
+						Email: "beller.moritz@googlemail.com",
+					},
+					Date:    time.Unix(1510488640, 0),
+					Type:    "docs",
+					Scope:   "MYSCOPE",
+					Ticket:  "TICKET-456",
+					Subject: "docs changed something 2",
+					Body:    "BREAKING CHANGE: my mom puked!\nBAZLER\n",
+					Change:  MajorChange,
+				},
+			},
+		},
+		{
 			// invalid time: fafafafafaffafafasdasd
 			in:      "2d7ea9249b0afb39c22da7774669738a7e56ff22~Ü>8~#Ä~8<Ü~1591e972ca68d72430ab159100f87683c2080508~Ü>8~#Ä~8<Ü~fafafafafaffafafasdasd~Ü>8~#Ä~8<Ü~Moritz Johner~Ü>8~#Ä~8<Ü~beller.moritz@googlemail.com~Ü>8~#Ä~8<Ü~feat(TEST-2): feature 2",
 			commits: nil,
@@ -100,6 +120,7 @@ func TestDefaultMapFunc(t *testing.T) {
 		in      string
 		tp      string
 		scope   string
+		ticket  string
 		subject string
 	}{
 		{
@@ -133,9 +154,16 @@ func TestDefaultMapFunc(t *testing.T) {
 			scope:   "1",
 			subject: "silly fix we have a maximum line length here. ever",
 		},
+		{
+			in:      "feat[ticket-123](1): silly fix",
+			tp:      "feat",
+			scope:   "1",
+			ticket:  "TICKET-123", // this is being uppercased!
+			subject: "silly fix",
+		},
 	}
 	for i, row := range table {
-		tp, scope, msg := DefaultMapFunc(row.in)
+		tp, ticket, scope, msg := DefaultMapFunc(row.in)
 		if tp != row.tp {
 			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.tp, tp)
 		}
@@ -144,6 +172,9 @@ func TestDefaultMapFunc(t *testing.T) {
 		}
 		if msg != row.subject {
 			t.Fatalf("[%d] wrong type: expected %#v, got %#v", i, row.subject, msg)
+		}
+		if ticket != row.ticket {
+			t.Fatalf("[%d] wrong ticket: expected %#v, got %#v", i, row.ticket, ticket)
 		}
 	}
 }
