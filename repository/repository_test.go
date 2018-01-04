@@ -58,19 +58,24 @@ func TestGetHistory(t *testing.T) {
 	createAndCommit(repoPath, "first")
 	createAndCommit(repoPath, "second")
 	createAndCommit(repoPath, "third")
+	createAndCommit(repoPath, "fix[MYTICKET-123](chore): silly message")
 	commits, err := repo.GetHistoryUntil(commit.Hash)
 	if err != nil {
 		t.Fatalf("error: %v", err)
 	}
-	if commits[0].Subject != "third" {
-		t.Fatalf("third commit message wrong: expected third, got: %s", commits[0].Subject)
+	if commits[0].Type != "fix" || commits[0].Ticket != "MYTICKET-123" || commits[0].Scope != "CHORE" || commits[0].Subject != "silly message" {
+		t.Fatalf("fourth commit message wrong: %#v", commits[0])
 	}
-	if commits[1].Subject != "second" {
-		t.Fatalf("second commit message wrong: expected second, got: %s", commits[1].Subject)
+	if commits[1].Subject != "third" {
+		t.Fatalf("third commit message wrong: expected third, got: %s", commits[1].Subject)
 	}
-	if commits[2].Subject != "first" {
-		t.Fatalf("first commit message wrong: expected first, got: %s", commits[2].Subject)
+	if commits[2].Subject != "second" {
+		t.Fatalf("second commit message wrong: expected second, got: %s", commits[2].Subject)
 	}
+	if commits[3].Subject != "first" {
+		t.Fatalf("first commit message wrong: expected first, got: %s", commits[3].Subject)
+	}
+
 }
 
 func TestGetHistoryExecErr(t *testing.T) {

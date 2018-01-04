@@ -1,0 +1,62 @@
+#!/bin/bash
+set -e
+
+SMCL_BIN=${SMCL_BIN:-`pwd`/dist/smcl_linux_amd64}
+
+function startCommand {
+    NEXT_VERSION=$($SMCL_BIN --dir `pwd` next-version)
+
+    # BRANCH CONFIGURATION
+    branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+    devBranch=develop
+    MASTER=master
+    RELEASE=release-$NEXT_VERSION
+
+    git checkout -b $RELEASE $devBranch
+
+    # generate next version and changelog
+    $SMCL_BIN --dir `pwd` generate
+    
+    # commit version number increment
+    git commit -am "version bump to $NEXT_VERSION"
+
+    # merge release into master
+    git checkout $MASTER
+    git merge --no-ff $RELEASE
+    
+    # create tag for new version from -master
+    git tag $NEXT_VERSION
+    
+    # merge release branch back into develop
+    git checkout $devBranch
+    git merge --no-ff $RELEASE
+    
+    # remove release branch
+    git branch -d $RELEASE
+}
+
+function help {
+    cat << "EOF"
+Usage: ./kitt release 00_generate
+
+ENV VARIABLES:
+    * SMCL_BIN
+    
+EOF
+}
+
+function init {
+    echo $@
+    # shellcheck disable=SC2194
+    case "$1" in
+        --help)
+            help
+            exit 0
+            ;;
+        *)
+            startCommand
+            exit 0
+    esac
+}
+init $@
+
