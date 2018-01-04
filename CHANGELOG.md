@@ -1,3 +1,12 @@
+## 0.4.2 (2018-01-04)
+
+#### Bug Fixes
+
+* removing angularjs commit msg conventions (b007bf76) 
+
+
+
+
 ## 0.4.1 (2018-01-04)
 
 #### Bug Fixes
