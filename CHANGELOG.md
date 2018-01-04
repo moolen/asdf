@@ -1,3 +1,12 @@
+## 0.4.1 (2018-01-04)
+
+#### Bug Fixes
+
+* readme & use latest tag for build-version interpol (50a5f252) 
+
+
+
+
 ## 0.4.0 (2018-01-04)
 
 #### chroe
