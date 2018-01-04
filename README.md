@@ -29,17 +29,7 @@ GLOBAL OPTIONS:
    --help, -h     show help
    --version, -v  print the version
 ```
-### Commit Message Schema
-Commit messages have to follow the angularjs commit message conventions [[link](https://docs.google.com/document/d/1QrDFcIiPjSLDn3EL15IJygNPiHORgU1_OOAqWjiDU5Y/edit)].
-
-#### Examples
-- `test(PROJ-1312): write tests. do yourself a favor`
-- `docs(PROJ-1000):some thing!`
-- `(TICKK-123): foobar booman`
-- `bug: Y U NO GOAT?`
-
-
-#### Resulting Markdown
+#### Example generated CHANGELOG.md
 ```
 ## 0.2.0 (2017-11-14)
 
@@ -73,21 +63,4 @@ Commit messages have to follow the angularjs commit message conventions [[link](
 * config (ddf8535f) 
 * cli commands (dcd068a0) 
 ```
-
-### default types
-| Key | Label | Change type |
-| --- | --- | --- |
-| breaking | Breaking Changes | Major |
-| feat | Feature | Minor |
-| fix | Bug Fixes | Patch |
-| perf | Performance Improvements | Patch |
-| revert | Reverts | Patch |
-| docs | Documentation | Patch |
-| refactor | Code Refactoring | Patch |
-| test | Tests | Patch |
-| chore | Chores | Patch |
-
-
-### TODO
-[ ] add flag `--merge-only`to show only merges
  
