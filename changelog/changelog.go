@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/repository"
 )
 
 // FormatFunc is called for every commit and should

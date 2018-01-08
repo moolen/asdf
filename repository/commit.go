@@ -35,6 +35,7 @@ type Commit struct {
 	Date         time.Time
 	Type         string
 	Scope        string
+	Ticket       string
 	Subject      string
 	Body         string
 	Change       Change
@@ -50,7 +51,7 @@ type CommitAuthor struct {
 // that provides convenient functionality
 type Commits []*Commit
 
-var commitPattern = regexp.MustCompile("^(\\w*)(?:\\((.*)\\))?\\: (.*)$")
+var commitPattern = regexp.MustCompile("^(\\w*)(?:\\[(.*)\\])?(?:\\((.*)\\))?\\: (.*)$")
 
 // ErrParse happens, if git log gives us wrong output
 var ErrParse = errors.New("could not parse log output")
@@ -60,7 +61,7 @@ var ErrParse = errors.New("could not parse log output")
 // - the type of change (feat/ix/breaking)
 // - the scope
 // - the stripped message
-type CommitMapFunc func(msg string) (commitType string, scope string, subject string)
+type CommitMapFunc func(msg string) (commitType, ticket, scope, subject string)
 
 // used as delimiter to split the values from git log
 var delimiter = "~Ü>8~#Ä~8<Ü~"
@@ -82,15 +83,16 @@ var logFormatter = strings.Join(formatString, delimiter) + "%n" + bodyBeginSeper
 
 // DefaultMapFunc parses the commit message
 // and returns a type
-func DefaultMapFunc(msg string) (commitType string, commitScope string, commitMessage string) {
+func DefaultMapFunc(msg string) (commitType, commitTicket, commitScope, commitMessage string) {
 	lines := strings.Split(msg, "\n")
 	found := commitPattern.FindAllStringSubmatch(lines[0], -1)
 	if len(found) < 1 {
-		return "", "", msg
+		return "", "", "", msg
 	}
 	commitType = strings.ToLower(found[0][1])
-	commitScope = strings.ToUpper(found[0][2])
-	commitMessage = fmt.Sprintf("%.50s", strings.ToLower(found[0][3]))
+	commitTicket = strings.ToUpper(found[0][2])
+	commitScope = strings.ToUpper(found[0][3])
+	commitMessage = fmt.Sprintf("%.50s", strings.ToLower(found[0][4]))
 	return
 }
 
@@ -128,7 +130,7 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 			return nil, err
 		}
 		changedDate := time.Unix(unixSeconds, 0)
-		commitType, commitScope, commitMessage := mapFunc(parsedMetadata[5])
+		commitType, commitTicket, commitScope, commitMessage := mapFunc(parsedMetadata[5])
 		if commitType == "feat" {
 			change = MinorChange
 		}
@@ -146,6 +148,7 @@ func ParseCommits(stdout io.Reader, mapFunc CommitMapFunc) ([]*Commit, error) {
 				Email: parsedMetadata[4],
 			},
 			Change: change,
+			Ticket: commitTicket,
 			Scope:  commitScope,
 			Type:   commitType,
 		})

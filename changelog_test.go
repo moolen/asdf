@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/repository"
 	"github.com/urfave/cli"
 )
 
