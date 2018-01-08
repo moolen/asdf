@@ -8,7 +8,7 @@ groups:
 jobs:
   - name: test-master
     plan:
-      - { get: git, trigger: true }
+      - { get: git-master, trigger: true }
       - task: run-test
         config:
           platform: linux
@@ -17,18 +17,17 @@ jobs:
             source:
               repository: docker-registry.figo.systems/figo/smcl-test
           inputs:
-            - { name: git }
+            - { name: git-master, path: /go/src/github.com/figome/semantic-changelog }
           run:
             path: sh
-            dir: ./git
+            dir: /go/src/github.com/figome/semantic-changelog
             args:
             - -exc
-            - /deps/kitt test
+            - /deps/kitt prepare && /deps/kitt test
 
   - name: test-pr
     public: true
     plan:
-      - { get: git }
       - { get: git-pull-requests, trigger: true, version: every }
       - put: git-pull-requests
         params:
@@ -42,14 +41,13 @@ jobs:
             source:
               repository: docker-registry.figo.systems/figo/smcl-test
           inputs:
-            - { name: git }
-            - { name: git-pull-requests }
+            - { name: git-pull-requests, path: /go/src/github.com/figome/semantic-changelog }
           run:
             path: sh
-            dir: ./git-pull-requests
+            dir: /go/src/github.com/figome/semantic-changelog
             args:
             - -exc
-            - /deps/kitt test
+            - /deps/kitt prepare && /deps/kitt test
         on_success:
           put: git-pull-requests
           params:
@@ -68,7 +66,7 @@ resource_types:
       repository: jtarchie/pr
 
 resources:
-  - name: git
+  - name: git-master
     type: git
     source:
       uri:         git@github.com:figome/semantic-changelog

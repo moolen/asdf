@@ -1,3 +1,4 @@
 vendor/
 dist/
 ci/credentials.yml
+ci/test-image/kitt
