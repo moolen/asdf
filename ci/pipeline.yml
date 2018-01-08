@@ -1,0 +1,85 @@
+---
+groups:
+  - name: smcl-test-pr
+    jobs:
+      - test-master
+      - test-pr
+
+jobs:
+  - name: test-master
+    plan:
+      - { get: git, trigger: true }
+      - task: run-test
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: docker-registry.figo.systems/figo/smcl-test
+          inputs:
+            - { name: git }
+          run:
+            path: sh
+            dir: ./git
+            args:
+            - -exc
+            - /deps/kitt test
+
+  - name: test-pr
+    public: true
+    plan:
+      - { get: git }
+      - { get: git-pull-requests, trigger: true, version: every }
+      - put: git-pull-requests
+        params:
+          path: git-pull-requests
+          status: pending
+      - task: test-pr
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: docker-registry.figo.systems/figo/smcl-test
+          inputs:
+            - { name: git }
+            - { name: git-pull-requests }
+          run:
+            path: sh
+            dir: ./git-pull-requests
+            args:
+            - -exc
+            - /deps/kitt test
+        on_success:
+          put: git-pull-requests
+          params:
+            path: git-pull-requests
+            status: success
+        on_failure:
+          put: git-pull-requests
+          params:
+            path: git-pull-requests
+            status: failure
+
+resource_types:
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: jtarchie/pr
+
+resources:
+  - name: git
+    type: git
+    source:
+      uri:         git@github.com:figome/semantic-changelog
+      branch:      master
+      private_key: {{github_private_key}}
+
+  - name: git-pull-requests
+    type: pull-request
+    source:
+      access_token: {{github_access_token}}
+      private_key:  {{github_private_key}}
+      repo:         figome/semantic-changelog
+      uri:          git@github.com:figome/semantic-changelog
+
