@@ -7,7 +7,7 @@ import (
 
 	"github.com/Masterminds/semver"
 
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/repository"
 )
 
 var mylog = `## 2.1.3-rc123 (%s)

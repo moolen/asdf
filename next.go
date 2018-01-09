@@ -6,7 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/repository"
 	"github.com/urfave/cli"
 )
 

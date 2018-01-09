@@ -21,6 +21,7 @@ const (
 	flagDebug     = "debug"
 )
 
+var smclVersion string
 var errNoRevision = errors.New("revision is required")
 var errNoFile = errors.New("file is required")
 var errNoVersionProvided = errors.New("no version provided")
@@ -42,20 +43,11 @@ var DefaultTypeMap = map[string]string{
 func main() {
 	log.SetFormatter(&log.TextFormatter{})
 	app := cli.NewApp()
-	app.Name = "asdf"
-	app.Version = "0.1.0"
+	app.Name = "smcl"
+	app.Version = smclVersion
 	app.Usage = "Changelog and version generation based on semantic commit messages.\n\n   "
-	app.Usage += "Specification about the structure is here: http://conventionalcommits.org\n   "
-	app.Usage += "All commit messages should follow this very convention:\n   "
-	app.Usage += "-------------------------------\n   "
-	app.Usage += "<type>(scope): <subject>\n\n   "
-	app.Usage += "<body>\n   "
-	app.Usage += "-------------------------------\n   "
-	app.Usage += "\n   "
-	app.Usage += "Example commit message subjects:\n\n   "
-	app.Usage += "feat(TICKET-123): implementing a feature\n   "
-	app.Usage += "fix: fixed something\n   "
-	app.Usage += "(TICKET-123): some message\n\n   "
+	app.Usage += "Specification about the structure is here:\n   "
+	app.Usage += "https://github.com/figome/figo-rfc/blob/master/docs/COMMIT_MESSAGE.md"
 
 	app.Commands = []cli.Command{
 		{
@@ -108,7 +100,7 @@ func globalFlags() []cli.Flag {
 }
 
 func getCwd(c *cli.Context) (string, error) {
-	cwd := c.String("dir")
+	cwd := c.GlobalString("dir")
 	if cwd == "" {
 		dir, err := os.Executable()
 		if err != nil {
