@@ -1,11 +1,13 @@
 #!/bin/bash
 set -e
 
-: ${BUILD_VERSION:=`git describe --abbrev=0 --tags`}
 
 function startCommand {
     echo using version: $BUILD_VERSION
-    docker build --build-arg BUILD_VERSION=$BUILD_VERSION -t figome/smcl_build . -f Dockerfile.build
+    rm -rf dist
+    mkdir dist
+    cd dist
+    gox -ldflags="-X main.smclVersion=$BUILD_VERSION"  -arch="amd64" -output="smcl_{{.OS}}_{{.Arch}}" -os="darwin linux windows" github.com/figome/semantic-changelog
 }
 
 function help {

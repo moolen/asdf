@@ -10,7 +10,7 @@ jobs:
   plan:
   - get: git-master
     trigger: true
-  - task: run-test
+  - task: test-build-release
     config:
       platform: linux
       image_resource:
@@ -22,6 +22,8 @@ jobs:
       inputs:
       - name: git-master
         path: /go/src/github.com/figome/semantic-changelog
+      params:
+        GITHUB_TOKEN: {{github_access_token}}
       run:
         path: sh
         args:
@@ -31,7 +33,27 @@ jobs:
           cd $GOPATH/src/github.com/figome/semantic-changelog
           /deps/kitt prepare
           /deps/kitt test
-      
+          /deps/kitt build
+          /deps/kitt release
+
+          # create github release & upload binaries
+          /go/bin/github-release release \
+            --user figome \
+            --repo semantic-changelog \
+            --tag $(cat ./VERSION)
+          /go/bin/github-release upload \
+            --user figome \
+            --repo semantic-changelog \
+            --tag $(cat ./VERSION) \
+            --name smcl_linux_amd64 \
+            --file ./dist/smcl_linux_amd64
+          /go/bin/github-release upload \
+            --user figome \
+            --repo semantic-changelog \
+            --tag $(cat ./VERSION) \
+            --name smcl_darwin_amd64 \
+            --file ./dist/smcl_darwin_amd64
+    
 - name: test-pr
   plan:
   - get: git-pull-requests
