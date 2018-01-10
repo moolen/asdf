@@ -4,10 +4,16 @@ set -e
 SMCL_BIN=${SMCL_BIN:-`pwd`/dist/smcl_linux_amd64}
 
 function startCommand {
+    COMMIT=$(git log --pretty=oneline -n1 | grep "version bump to")
+    if [ $? -eq 0 ]; then
+        echo "skipping release: this is a version bump."
+        exit 1000
+    fi
     NEXT_VERSION=$($SMCL_BIN --dir `pwd` next-version)
     $SMCL_BIN --dir `pwd` generate
     git commit -am "version bump to $NEXT_VERSION"
     git tag $NEXT_VERSION
+    git push origin --tags master
 }
 
 function help {
