@@ -15,6 +15,8 @@ const (
 	flagRevision  = "revision"
 	flagDir       = "dir"
 	flagFile      = "file"
+	flagPrerelease = "prerelease"
+	flagMetadata = "metadata"
 	flagChangelog = "changelog"
 	flagLatest    = "latest"
 	flagVersion   = "version"

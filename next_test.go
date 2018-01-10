@@ -12,8 +12,12 @@ import (
 )
 
 func TestNextCommand(t *testing.T) {
+	type commit struct{
+		subject string
+		message string
+	}
 	table := []struct {
-		commits map[string]string
+		commits []commit
 		stdout  string
 		args    []string
 		err     error
@@ -24,28 +28,85 @@ func TestNextCommand(t *testing.T) {
 			err:    cli.NewExitError(errNoCommits, 6),
 		},
 		{
-			commits: map[string]string{
-				"feat: bar": "BREAKING CHANGES: yolo",
+			commits: []commit{
+				{
+					subject: "feat: bar",
+					message: "BREAKING CHANGES: yolo",
+				},
 			},
 			args:   []string{"--dir"},
 			stdout: "2.0.0",
 			err:    nil,
 		},
 		{
-			commits: map[string]string{
-				"feat: bar": "yolo",
+			commits: []commit{
+				{
+					subject: "feat: bar",
+					message: "yolo",
+				},
 			},
 			args:   []string{"--dir"},
 			stdout: "1.1.0",
 			err:    nil,
 		},
 		{
-			commits: map[string]string{
-				"fix: bar":  "yolo",
-				"feat: bar": "test",
+			commits: []commit{
+				{
+					subject: "fix: bar",
+					message: "yolo",
+				},
+				{
+					subject: "feat: bar",
+					message: "test",
+				},
 			},
 			args:   []string{"--file", "MYVERSIONFILE", "--dir"},
 			stdout: "13.15.0",
+			err:    nil,
+		},
+		{
+			commits: []commit{
+				{
+					subject: "fix: bar",
+					message: "yolo",
+				},
+				{
+					subject: "feat: bar",
+					message: "test",
+				},
+			},
+			args:   []string{"--file", "MYVERSIONFILE", "--prerelease", "yolo", "--dir"},
+			stdout: "13.15.0-yolo",
+			err:    nil,
+		},
+		{
+			commits: []commit{
+				{
+					subject: "fix: bar",
+					message: "yolo",
+				},
+				{
+					subject: "feat: bar",
+					message: "test",
+				},
+			},
+			args:   []string{"--file", "MYVERSIONFILE", "--metadata", "0xACAB", "--dir"},
+			stdout: "13.15.0+0xACAB",
+			err:    nil,
+		},
+		{
+			commits: []commit{
+				{
+					subject: "fix: bar",
+					message: "yolo",
+				},
+				{
+					subject: "feat: bar",
+					message: "test",
+				},
+			},
+			args:   []string{"--file", "MYVERSIONFILE", "--prerelease", "yolo", "--metadata", "0xACAB", "--dir"},
+			stdout: "13.15.0-yolo+0xACAB",
 			err:    nil,
 		},
 	}
@@ -58,8 +119,8 @@ func TestNextCommand(t *testing.T) {
 		}
 		repo := createRepository()
 		ioutil.WriteFile(path.Join(repo, "MYVERSIONFILE"), []byte("13.14.15"), os.ModePerm)
-		for subject, body := range row.commits {
-			createAndCommit(repo, subject, body)
+		for _, c := range row.commits {
+			createAndCommit(repo, c.subject, c.message)
 		}
 
 		flagSet.Parse(append(row.args, repo))
