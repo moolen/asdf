@@ -22,6 +22,8 @@ jobs:
       inputs:
       - name: git-master
         path: /go/src/github.com/figome/semantic-changelog
+      outputs:
+      - name: smcl-tagged
       params:
         GITHUB_TOKEN: {{github_access_token}}
       run:
@@ -54,8 +56,8 @@ jobs:
             --tag $(cat ./VERSION) \
             --name smcl_darwin_amd64 \
             --file ./dist/smcl_darwin_amd64
-          cd ../
-          git clone semantic-changelog smcl-tagged
+          cd ../../../../../
+          git clone go/src/github.com/figome/semantic-changelog smcl-tagged
   - put: git-master
     params: { only_tag: true, repository: go/src/github.com/figome/smcl-tagged }
     
