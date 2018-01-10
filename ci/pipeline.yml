@@ -30,6 +30,7 @@ jobs:
         - -exc
         - |
           export GOPATH=$PWD/go
+          export PATH=$PATH:$GOPATH/bin:/go/bin
           cd $GOPATH/src/github.com/figome/semantic-changelog
           /deps/kitt prepare
           /deps/kitt test
@@ -81,6 +82,7 @@ jobs:
         - -exc
         - |
           export GOPATH=$PWD/go
+          export PATH=$PATH:$GOPATH/bin:/go/bin
           cd $GOPATH/src/github.com/figome/semantic-changelog
           /deps/kitt prepare
           /deps/kitt test
