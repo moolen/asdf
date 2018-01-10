@@ -54,6 +54,10 @@ jobs:
             --tag $(cat ./VERSION) \
             --name smcl_darwin_amd64 \
             --file ./dist/smcl_darwin_amd64
+          cd ../
+          git clone semantic-changelog smcl-tagged
+  - put: git-master
+    params: { only_tag: true, repository: go/src/github.com/figome/smcl-tagged }
     
 - name: test-pr
   plan:

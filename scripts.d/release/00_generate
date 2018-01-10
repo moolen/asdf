@@ -15,7 +15,6 @@ function startCommand {
     $SMCL_BIN --dir `pwd` generate
     git commit -am "version bump to $NEXT_VERSION"
     git tag $NEXT_VERSION
-    GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git push origin --tags master
 }
 
 function help {
