@@ -20,6 +20,7 @@ func nextCommand(c *cli.Context) error {
 	if file == "" {
 		return cli.NewExitError(errNoFile, 2)
 	}
+	log.Debugf("cwd: %s", cwd)
 	file = path.Join(cwd, file)
 	repo := repository.New(cwd, repository.DefaultMapFunc)
 	commit, err = repo.LatestChangeOfFile(file)

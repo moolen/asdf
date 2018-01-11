@@ -12,6 +12,8 @@ import (
 )
 
 const (
+	flagRelease = "release"
+	flagAccessToken = "token"
 	flagRevision  = "revision"
 	flagDir       = "dir"
 	flagFile      = "file"
@@ -72,6 +74,13 @@ func main() {
 			Usage:   "generates the changelog and writes it to stdout. By default it uses a VERSION file to fetch the history since the last release. This can be overridden by defining a --" + flagVersion + " and --" + flagRevision,
 			Flags:   changelogFlags(),
 			Action:  changelogCommand,
+		},
+		{
+			Name: "sync",
+			Aliases: []string{"s"},
+			Usage: "updates your local version of smcl",
+			Flags: syncFlags(),
+			Action: syncAction,
 		},
 	}
 

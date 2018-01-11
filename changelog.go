@@ -47,10 +47,10 @@ func changelogCommand(c *cli.Context) error {
 			return cli.NewExitError(err, 4)
 		}
 		commit, err := repo.LatestChangeOfFile(versionPath)
-		log.Infof("latest change: %s", commit.Hash)
 		if err != nil {
 			return cli.NewExitError(err, 5)
 		}
+		log.Infof("latest change: %s", commit.Hash)
 		commits, err = repo.GetHistoryUntil(commit.Hash)
 		log.Infof("found %d commits", len(commits))
 		if err != nil {
