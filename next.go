@@ -6,7 +6,7 @@ import (
 
 	log "github.com/Sirupsen/logrus"
 
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/repository"
 	"github.com/urfave/cli"
 )
 
@@ -20,6 +20,7 @@ func nextCommand(c *cli.Context) error {
 	if file == "" {
 		return cli.NewExitError(errNoFile, 2)
 	}
+	log.Debugf("cwd: %s", cwd)
 	file = path.Join(cwd, file)
 	repo := repository.New(cwd, repository.DefaultMapFunc)
 	commit, err = repo.LatestChangeOfFile(file)
@@ -43,6 +44,20 @@ func nextCommand(c *cli.Context) error {
 
 	log.Infof("found max change: %s", commits.MaxChange())
 	nextVersion := nextReleaseByChange(latest, commits.MaxChange())
+	pre := c.String(flagPrerelease)
+	if pre != "" {
+		nextVersion, err = nextVersion.SetPrerelease(pre)
+		if err != nil {
+			return cli.NewExitError(err, 7)
+		}
+	}
+	meta := c.String(flagMetadata)
+	if meta != "" {
+		nextVersion, err = nextVersion.SetMetadata(meta)
+		if err != nil {
+			return cli.NewExitError(err, 8)
+		}
+	}
 	os.Stdout.WriteString(nextVersion.String())
 	return nil
 }
@@ -53,6 +68,18 @@ func nextFlags() []cli.Flag {
 			Name:  flagFile,
 			Value: "VERSION",
 			Usage: "file to use to get the commit of last modification. That file must include the latest version",
+		},
+		cli.StringFlag{
+			Name:  flagPrerelease,
+			Value: "",
+			EnvVar: "RELEASE_PRERELEASE",
+			Usage: "add prerelease tag",
+		},
+		cli.StringFlag{
+			Name:  flagMetadata,
+			Value: "",
+			EnvVar: "RELEASE_METADATA",
+			Usage: "add metadata tag",
 		},
 	}
 }

@@ -9,13 +9,14 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/repository"
 )
 
 func readVersionFile(path string) (*semver.Version, error) {
+	log.Debugf("trying to open %s", path)
 	file, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, err // todo: more descriptive error message
 	}
 	return readVersion(file)
 }
@@ -26,7 +27,11 @@ func readVersion(rd io.Reader) (*semver.Version, error) {
 		return nil, err
 	}
 	versionString := strings.TrimRight(string(content), "\n")
-	version := semver.MustParse(versionString)
+	log.Debugf("file content %s", versionString)
+	version, err := semver.NewVersion(versionString)
+	if err != nil {
+		return nil, err
+	}
 	return version, nil
 }
 

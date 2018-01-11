@@ -1,0 +1,39 @@
+#!/bin/bash
+set -e
+
+: ${BUILD_VERSION:=`git describe --abbrev=0 --tags`}
+
+function startCommand {
+    echo using version: $BUILD_VERSION
+    docker build --build-arg BUILD_VERSION=$BUILD_VERSION -t figome/smcl_build . -f Dockerfile.build
+
+    docker create --name smcl_build figome/smcl_build
+    docker cp smcl_build:/go/src/github.com/figome/semantic-changelog/dist ./dist
+
+    ls -a dist/
+}
+
+function help {
+    cat << "EOF"
+Usage: ./kitt build bin
+
+builds a binary using a docker container
+
+EOF
+}
+
+function init {
+    echo $@
+    # shellcheck disable=SC2194
+    case "$1" in
+        --help)
+            help
+            exit 0
+            ;;
+        *)
+            startCommand
+            exit 0
+    esac
+}
+init $@
+

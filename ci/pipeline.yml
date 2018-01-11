@@ -1,0 +1,125 @@
+---
+groups:
+- name: smcl-test-pr
+  jobs:
+  - test-master
+  - test-pr
+
+jobs:
+- name: test-master
+  plan:
+  - get: git-master
+    trigger: true
+  - task: test-build-release
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          username: _json_key
+          password: {{gcr_service_account}}
+          repository: eu.gcr.io/figo-v1/smcl-test
+      inputs:
+      - name: git-master
+        path: /go/src/github.com/figome/semantic-changelog
+      outputs:
+      - name: smcl-tagged
+      params:
+        GITHUB_TOKEN: {{github_access_token}}
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          export GOPATH=$PWD/go
+          export PATH=$PATH:$GOPATH/bin:/go/bin
+          cd $GOPATH/src/github.com/figome/semantic-changelog
+          /deps/kitt prepare
+          /deps/kitt test
+          /deps/kitt build
+          /deps/kitt release
+
+          # create github release & upload binaries
+          /go/bin/github-release release \
+            --user figome \
+            --repo semantic-changelog \
+            --tag $(cat ./VERSION)
+          /go/bin/github-release upload \
+            --user figome \
+            --repo semantic-changelog \
+            --tag $(cat ./VERSION) \
+            --name smcl_linux_amd64 \
+            --file ./dist/smcl_linux_amd64
+          /go/bin/github-release upload \
+            --user figome \
+            --repo semantic-changelog \
+            --tag $(cat ./VERSION) \
+            --name smcl_darwin_amd64 \
+            --file ./dist/smcl_darwin_amd64
+          cd ../../../../../
+          git clone go/src/github.com/figome/semantic-changelog smcl-tagged
+  - put: git-master
+    params: { only_tag: true, repository: go/src/github.com/figome/smcl-tagged }
+    
+- name: test-pr
+  plan:
+  - get: git-pull-requests
+    trigger: true
+    version: every
+  - put: git-pull-requests
+    params:
+      path: git-pull-requests
+      status: pending
+  - task: test-pr
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          username: _json_key
+          password: {{gcr_service_account}}
+          repository: eu.gcr.io/figo-v1/smcl-test
+      inputs:
+      - name: git-pull-requests
+        path: /go/src/github.com/figome/semantic-changelog
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          export GOPATH=$PWD/go
+          export PATH=$PATH:$GOPATH/bin:/go/bin
+          cd $GOPATH/src/github.com/figome/semantic-changelog
+          /deps/kitt prepare
+          /deps/kitt test
+    on_failure:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: failure
+    on_success:
+      put: git-pull-requests
+      params:
+        path: git-pull-requests
+        status: success
+
+resource_types:
+- name: pull-request
+  type: docker-image
+  source:
+    repository: jtarchie/pr
+
+resources:
+- name: git-pull-requests
+  type: pull-request
+  source:
+    access_token: {{github_access_token}}
+    private_key: {{github_private_key}}
+    repo: figome/semantic-changelog
+    uri: git@github.com:figome/semantic-changelog
+- name: git-master
+  type: git
+  source:
+    branch: master
+    private_key: {{github_private_key}}
+    uri: git@github.com:figome/semantic-changelog

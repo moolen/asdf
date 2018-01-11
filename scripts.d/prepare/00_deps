@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+
+function startCommand {
+    go get github.com/golang/dep/cmd/dep
+    go get github.com/mitchellh/gox
+    dep ensure
+}
+
+function help {
+    cat << "EOF"
+Usage: ./kitt prepare 00_deps
+    installs dep 
+    installs dependencies
+EOF
+}
+
+function init {
+    echo $@
+    # shellcheck disable=SC2194
+    case "$1" in
+        --help)
+            help
+            exit 0
+            ;;
+        *)
+            startCommand
+            exit 0
+    esac
+}
+init $@
+

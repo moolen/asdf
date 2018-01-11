@@ -10,8 +10,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/changelog"
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/changelog"
+	"github.com/figome/semantic-changelog/repository"
 	"github.com/urfave/cli"
 )
 
@@ -38,7 +38,6 @@ func generateCommand(c *cli.Context) error {
 	log.Infof("working in dir: %s", cwd)
 	versionPath := path.Join(cwd, versionFile)
 	changelogfile := path.Join(cwd, changelogFile)
-	execDir(cwd, "git", "fetch", "--all")
 	changelog, nextVersion, err := generateReleaseAndChangelog(cwd, versionFile, changelog.DefaultFormatFunc)
 	if err != nil {
 		return cli.NewExitError(err, 4)

@@ -7,8 +7,8 @@ import (
 	log "github.com/Sirupsen/logrus"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/changelog"
-	"github.com/moolen/asdf/repository"
+	"github.com/figome/semantic-changelog/changelog"
+	"github.com/figome/semantic-changelog/repository"
 	"github.com/urfave/cli"
 )
 
@@ -47,10 +47,10 @@ func changelogCommand(c *cli.Context) error {
 			return cli.NewExitError(err, 4)
 		}
 		commit, err := repo.LatestChangeOfFile(versionPath)
-		log.Infof("latest change: %s", commit.Hash)
 		if err != nil {
 			return cli.NewExitError(err, 5)
 		}
+		log.Infof("latest change: %s", commit.Hash)
 		commits, err = repo.GetHistoryUntil(commit.Hash)
 		log.Infof("found %d commits", len(commits))
 		if err != nil {

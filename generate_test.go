@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/Masterminds/semver"
-	"github.com/moolen/asdf/changelog"
+	"github.com/figome/semantic-changelog/changelog"
 	"github.com/urfave/cli"
 )
 

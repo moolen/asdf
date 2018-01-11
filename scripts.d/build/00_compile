@@ -1,0 +1,37 @@
+#!/bin/bash
+set -e
+
+
+function startCommand {
+    echo using version: $BUILD_VERSION
+    rm -rf dist
+    mkdir dist
+    cd dist
+    gox -ldflags="-X main.smclVersion=$BUILD_VERSION"  -arch="amd64" -output="smcl_{{.OS}}_{{.Arch}}" -os="darwin linux windows" github.com/figome/semantic-changelog
+}
+
+function help {
+    cat << "EOF"
+Usage: ./kitt build 01_build
+    creates the container and the binaries
+
+ENV VARIABLES:
+    * BUILD_VERSION
+EOF
+}
+
+function init {
+    echo $@
+    # shellcheck disable=SC2194
+    case "$1" in
+        --help)
+            help
+            exit 0
+            ;;
+        *)
+            startCommand
+            exit 0
+    esac
+}
+init $@
+
